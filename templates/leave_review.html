@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave a Review for {{ mentor.username }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 text-center pt-5 pb-3">
+                    <div class="avatar-circle bg-primary text-white mx-auto mb-3 shadow-sm d-flex align-items-center justify-content-center fw-bold"
+                        style="width: 80px; height: 80px; border-radius: 50%; font-size: 2rem;">
+                        {{ mentor.full_name|default:mentor.username|first|upper }}
+                    </div>
+                    <h3 class="fw-bold text-dark mb-1">Rate Your Session</h3>
+                    <p class="text-muted mb-0">with {{ mentor.full_name|default:mentor.username }}</p>
+                </div>
+
+                <div class="card-body px-5 pb-5 pt-0">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="text-center mb-4">
+                            <label class="form-label fw-bold text-dark">Overall Rating</label>
+                            <div class="star-rating d-flex justify-content-center flex-row-reverse">
+                                <input type="radio" id="star5" name="rating" value="5" required />
+                                <label for="star5" title="5 stars"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star4" name="rating" value="4" />
+                                <label for="star4" title="4 stars"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star3" name="rating" value="3" />
+                                <label for="star3" title="3 stars"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star2" name="rating" value="2" />
+                                <label for="star2" title="2 stars"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star1" name="rating" value="1" />
+                                <label for="star1" title="1 star"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="comment" class="form-label fw-bold">Written Feedback</label>
+                            <textarea class="form-control bg-light border-0" id="comment" name="comment" rows="4" 
+                                placeholder="What did you learn? How was their teaching style?" required style="border-radius: 12px;"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary rounded-pill py-3 fw-bold fs-5 shadow hover-scale">
+                                Submit Review
+                            </button>
+                            <a href="{% url 'home:index' %}" class="btn btn-light rounded-pill py-2 text-muted fw-bold">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .star-rating {
+        font-size: 2.5rem;
+    }
+    .star-rating input {
+        display: none;
+    }
+    .star-rating label {
+        color: #e4e5e9;
+        cursor: pointer;
+        transition: color 0.2s;
+        padding: 0 5px;
+    }
+    .star-rating input:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #ffc107;
+    }
+    .hover-scale {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hover-scale:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2) !important;
+    }
+</style>
+{% endblock %}

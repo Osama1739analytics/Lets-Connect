@@ -1,0 +1,209 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-number {
+        font-size: 2.5em;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .stat-label {
+        font-size: 1.1em;
+        opacity: 0.9;
+    }
+
+    .mentee-stat {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .mentor-stat {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .session-stat {
+        background: linear-gradient(135deg, rgb(23, 190, 182) 0%, #fed6e3 100%);
+        color: #333;
+    }
+
+    .recent-sessions {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border: 1px solidrgb(112, 159, 207);
+    }
+
+    .recent-sessions h2 {
+        color: rgb(24, 167, 192);
+        font-size: 1.5em;
+        font-weight: 700;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #2a5d84;
+    }
+
+    .session-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid rgb(51, 207, 168);
+        transition: background-color 0.2s ease;
+    }
+
+    .session-item:hover {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .session-item:last-child {
+        border-bottom: none;
+    }
+
+    .session-title {
+        font-weight: 700;
+        color: #2a5d84;
+        font-size: 1.1em;
+        margin-bottom: 5px;
+    }
+
+    .session-participants {
+        font-size: 0.95em;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .session-status {
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.85em;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-completed {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    .status-scheduled {
+        background: linear-gradient(135deg, #007bff, #6610f2);
+        color: white;
+    }
+
+    .status-in-progress {
+        background: linear-gradient(135deg, rgb(167, 194, 16), rgb(192, 111, 45));
+        color: white;
+    }
+
+    .status-cancelled {
+        background: linear-gradient(135deg, #dc3545, #e83e8c);
+        color: white;
+    }
+
+    .session-date {
+        font-size: 0.85em;
+        color: #888;
+        margin-top: 5px;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Let's Connect Administration Dashboard</h1>
+
+<div class="dashboard-stats">
+    <div class="stat-card mentee-stat">
+        <div class="stat-number">{{ mentee_count }}</div>
+        <div class="stat-label">🎓 Mentees (Students)</div>
+    </div>
+
+    <div class="stat-card mentor-stat">
+        <div class="stat-number">{{ mentor_count }}</div>
+        <div class="stat-label">👨‍🏫 Mentors (Professionals)</div>
+    </div>
+
+    <div class="stat-card session-stat">
+        <div class="stat-number">{{ total_sessions }}</div>
+        <div class="stat-label">📚 Total Sessions</div>
+    </div>
+
+    <div class="stat-card session-stat">
+        <div class="stat-number">{{ completed_sessions }}</div>
+        <div class="stat-label">✅ Completed Sessions</div>
+    </div>
+
+    <div class="stat-card session-stat">
+        <div class="stat-number">{{ notification_stats.total }}</div>
+        <div class="stat-label">🔔 Total Notifications</div>
+    </div>
+
+    <div class="stat-card session-stat">
+        <div class="stat-number">{{ notification_stats.unread }}</div>
+        <div class="stat-label">🔴 Unread Notifications</div>
+    </div>
+</div>
+
+<div class="recent-sessions">
+    <h2>Recent Sessions</h2>
+    {% for session in recent_sessions %}
+    <div class="session-item">
+        <div>
+            <div class="session-title">{{ session.subject_detail }}</div>
+            <div class="session-participants">
+                {% if session.initiator %}
+                {{ session.initiator.full_name|default:session.initiator.username }}
+                {% else %}
+                <span class="text-danger">Missing Initiator</span>
+                {% endif %}
+                {% if session.participant %}
+                → {{ session.participant.full_name|default:session.participant.username }}
+                {% else %}
+                (Open)
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <span class="session-status status-{{ session.status }}">
+                {{ session.get_status_display }}
+            </span>
+            <div class="session-date">
+                {{ session.scheduled_at|date:"M d, Y" }}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div style="text-align: center; padding: 40px; color: #666; font-size: 1.1em;">
+        <p>📅 No sessions found.</p>
+        <p style="font-size: 0.9em; margin-top: 10px;">Sessions will appear here once they are created.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{{ block.super }}
+{% endblock %}

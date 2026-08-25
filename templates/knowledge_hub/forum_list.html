@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Discussion Forum - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-5 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home:hub_dashboard' %}" class="text-decoration-none">Knowledge Hub</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Forum</li>
+                </ol>
+            </nav>
+            <h1 class="fw-bold text-dark mb-1"><i class="fas fa-comments text-warning me-2"></i>Discussion Forum</h1>
+            <p class="text-secondary mb-0">Ask questions, share advice, and connect with other members of the community.</p>
+        </div>
+        
+        <a href="{% url 'home:create_forum_thread' %}" class="btn btn-warning text-dark rounded-pill px-4 shadow-sm fw-bold">
+            <i class="fas fa-plus me-2"></i>Start a Discussion
+        </a>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5 bg-white p-4">
+        <form method="GET" class="row g-3">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ query }}" class="form-control bg-light border-0" placeholder="Search forum topics...">
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <select name="category" class="form-select bg-light border-0">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <button type="submit" class="btn btn-warning text-dark w-100 rounded-pill fw-bold">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Threads list -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden p-3">
+                <div class="list-group list-group-flush">
+                    {% for thread in threads %}
+                    <div class="list-group-item border-0 py-4 px-3 rounded-4 hover-bg mb-2">
+                        <div class="row align-items-center">
+                            <!-- Topic Info -->
+                            <div class="col-lg-9 mb-3 mb-lg-0">
+                                <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                    <span class="badge bg-warning-subtle text-warning px-3 py-1 rounded">{{ thread.category.name|default:"General" }}</span>
+                                    <small class="text-muted"><i class="far fa-clock me-1"></i>Posted {{ thread.created_at|timesince }} ago</small>
+                                </div>
+                                <h5 class="fw-bold mb-2">
+                                    <a href="{% url 'home:forum_thread_detail' thread.id %}" class="text-dark text-decoration-none hover-link">{{ thread.title }}</a>
+                                </h5>
+                                <p class="text-secondary small mb-0 line-clamp-2">{{ thread.content|truncatewords:30 }}</p>
+                            </div>
+                            
+                            <!-- Stats & Author -->
+                            <div class="col-lg-3 d-flex align-items-center justify-content-between border-start-lg ps-lg-4">
+                                <div class="text-center d-none d-lg-block">
+                                    <h4 class="fw-bold text-dark mb-0">{{ thread.comments.count }}</h4>
+                                    <small class="text-muted">replies</small>
+                                </div>
+                                
+                                <div class="d-flex align-items-center gap-2 ms-auto ms-lg-0">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                        {{ thread.author.username|slice:":2"|upper }}
+                                    </div>
+                                    <div class="text-end text-lg-start">
+                                        <small class="d-block fw-bold text-dark">@{{ thread.author.username }}</small>
+                                        <small class="text-muted" style="font-size: 0.75rem;">{{ thread.author.get_user_type_display }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                        <h5 class="fw-bold text-dark">No topics found</h5>
+                        <p class="text-secondary">Be the first to start a new discussion!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-bg:hover {
+        background-color: #f8f9fa !important;
+    }
+    .hover-link:hover {
+        color: var(--primary-color) !important;
+    }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;  
+        overflow: hidden;
+    }
+    @media(min-width: 992px) {
+        .border-start-lg {
+            border-left: 1px solid #dee2e6 !important;
+        }
+    }
+</style>
+{% endblock %}

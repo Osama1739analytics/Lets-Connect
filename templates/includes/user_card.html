@@ -1,0 +1,46 @@
+<div class="col">
+    <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-up transition-all">
+        <div class="d-flex align-items-center mb-3">
+            <div class="avatar-sm bg-primary text-white me-3 fw-bold" style="width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                {{ person.full_name|default:person.username|first|upper }}
+            </div>
+            <div class="flex-grow-1">
+                <h6 class="fw-bold mb-0">
+                    <a href="{% url 'home:public_profile' person.username %}" class="text-dark text-decoration-none hover-primary">
+                        {{ person.full_name|default:person.username }}
+                    </a>
+                </h6>
+                <span class="badge {% if person.user_type == 'mentor' %}bg-warning-subtle text-warning{% else %}bg-info-subtle text-info{% endif %} small py-1 px-2 rounded-pill">
+                    <i class="fas {% if person.user_type == 'mentor' %}fa-chalkboard-teacher{% else %}fa-user-graduate{% endif %} me-1"></i>
+                    {{ person.get_user_type_display }}
+                </span>
+            </div>
+        </div>
+        <p class="text-secondary small mb-3 line-clamp-2">
+            {% if person.user_type == 'mentor' %}
+                {{ person.mentor_expertise|default:person.mentor_bio|default:"Professional mentor on the platform."|truncatechars:120 }}
+            {% else %}
+                {{ person.learning_goals|default:"Looking to learn and grow through mentorship."|truncatechars:120 }}
+            {% endif %}
+        </p>
+        <div class="mt-auto d-flex gap-2">
+            {% if person.id in connected_user_ids %}
+            <button class="btn btn-success-subtle text-success w-100 rounded-pill btn-sm fw-bold border-0" disabled>
+                <i class="fas fa-check me-1"></i>Connected
+            </button>
+            {% elif person.id in pending_user_ids %}
+            <button class="btn btn-warning-subtle text-warning w-100 rounded-pill btn-sm fw-bold border-0" disabled>
+                <i class="fas fa-hourglass-half me-1"></i>Pending
+            </button>
+            {% else %}
+            <form action="{% url 'home:send_connect_request' person.id %}" method="POST" class="w-100 m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary w-100 rounded-pill btn-sm fw-bold">Connect</button>
+            </form>
+            {% endif %}
+            <a href="{% url 'home:public_profile' person.username %}" class="btn btn-outline-secondary btn-sm rounded-pill" title="View profile">
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
+    </div>
+</div>

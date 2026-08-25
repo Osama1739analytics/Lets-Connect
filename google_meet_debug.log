@@ -1,0 +1,36 @@
+
+[2026-05-02 05:05:12.796270] Session 35 Error:
+module 'django.utils.timezone' has no attribute 'utc'
+Traceback (most recent call last):
+  File "C:\Users\Shary\Desktop\FYP - P2P\Peer2ProfessionalGuidanceApp\Peer-2-Professional Guidance App\home\services.py", line 44, in generate_google_meet_link
+    start_time_utc = start_time.astimezone(timezone.utc)
+                                           ^^^^^^^^^^^^
+AttributeError: module 'django.utils.timezone' has no attribute 'utc'. Did you mean: 'UTC'?
+
+
+[2026-05-02 05:05:43.474210] Session 35 Error:
+module 'django.utils.timezone' has no attribute 'utc'
+Traceback (most recent call last):
+  File "C:\Users\Shary\Desktop\FYP - P2P\Peer2ProfessionalGuidanceApp\Peer-2-Professional Guidance App\home\services.py", line 44, in generate_google_meet_link
+    start_time_utc = start_time.astimezone(timezone.utc)
+                                           ^^^^^^^^^^^^
+AttributeError: module 'django.utils.timezone' has no attribute 'utc'. Did you mean: 'UTC'?
+
+
+[2026-05-02 05:22:38.731505] Session 36 Error:
+module 'django.utils.timezone' has no attribute 'utc'
+Traceback (most recent call last):
+  File "C:\Users\Shary\Desktop\FYP - P2P\Peer2ProfessionalGuidanceApp\Peer-2-Professional Guidance App\home\services.py", line 44, in generate_google_meet_link
+    start_time_utc = start_time.astimezone(timezone.utc)
+                                           ^^^^^^^^^^^^
+AttributeError: module 'django.utils.timezone' has no attribute 'utc'. Did you mean: 'UTC'?
+
+
+[2026-05-02 05:23:05.275855] Session 36 Error:
+module 'django.utils.timezone' has no attribute 'utc'
+Traceback (most recent call last):
+  File "C:\Users\Shary\Desktop\FYP - P2P\Peer2ProfessionalGuidanceApp\Peer-2-Professional Guidance App\home\services.py", line 44, in generate_google_meet_link
+    start_time_utc = start_time.astimezone(timezone.utc)
+                                           ^^^^^^^^^^^^
+AttributeError: module 'django.utils.timezone' has no attribute 'utc'. Did you mean: 'UTC'?
+

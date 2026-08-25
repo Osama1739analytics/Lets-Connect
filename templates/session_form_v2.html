@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px;">
+                <div class="card-header bg-primary py-4 text-center border-0">
+                    <h2 class="text-white mb-0 fw-bold"><i class="fas fa-calendar-plus me-2"></i>{{ title }}</h2>
+                </div>
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form method="POST" id="sessionForm" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Nature of Session (Radio Selection) -->
+                        <div class="mb-5">
+                            <label class="form-label fw-bold h5 mb-3 text-dark">What kind of session is this? <span
+                                    class="text-danger">*</span></label>
+                            <div class="row g-3 row-cols-1 row-cols-md-3">
+                                <!-- Option 1: Course Guidance -->
+                                <div class="col">
+                                    <input type="radio" class="btn-check" name="nature" id="nature_course"
+                                        value="course" {% if form.nature.value == 'course' %}checked{% endif %} required>
+                                    <label
+                                        class="btn btn-outline-light text-dark h-100 w-100 p-4 border shadow-sm nature-card"
+                                        for="nature_course">
+                                        <i class="fas fa-graduation-cap fa-3x mb-3 text-primary"></i>
+                                        <div class="fw-bold">Course</div>
+                                        <div class="small text-muted">Guidance</div>
+                                    </label>
+                                </div>
+                                <!-- Option 2: Career Advice -->
+                                <div class="col">
+                                    <input type="radio" class="btn-check" name="nature" id="nature_career"
+                                        value="career" {% if form.nature.value == 'career' %}checked{% endif %}>
+                                    <label
+                                        class="btn btn-outline-light text-dark h-100 w-100 p-4 border shadow-sm nature-card"
+                                        for="nature_career">
+                                        <i class="fas fa-briefcase fa-3x mb-3 text-success"></i>
+                                        <div class="fw-bold">Career</div>
+                                        <div class="small text-muted">Advice</div>
+                                    </label>
+                                </div>
+                                <!-- Option 3: General Topic -->
+                                <div class="col">
+                                    <input type="radio" class="btn-check" name="nature" id="nature_general"
+                                        value="general" {% if form.nature.value == 'general' %}checked{% endif %}>
+                                    <label
+                                        class="btn btn-outline-light text-dark h-100 w-100 p-4 border shadow-sm nature-card"
+                                        for="nature_general">
+                                        <i class="fas fa-comments fa-3x mb-3 text-warning"></i>
+                                        <div class="fw-bold">General</div>
+                                        <div class="small text-muted">Topic</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Topic / Subject -->
+                        <div class="mb-4">
+                            <label for="id_subject_detail" class="form-label fw-bold">Topic / Subject <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" name="subject_detail" class="form-control"
+                                placeholder="Enter Name (Course/Career/Topic)" id="id_subject_detail" required
+                                value="{{ form.subject_detail.value|default:'' }}">
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="id_description" class="form-label fw-bold">Description <span
+                                    class="text-danger">*</span></label>
+                            <textarea name="description" cols="40" rows="3" class="form-control"
+                                placeholder="Describe what you want to learn or teach..." id="id_description"
+                                required>{{ form.description.value|default:'' }}</textarea>
+                        </div>
+
+                        <!-- Date & Time (Split Inputs) -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="date_input" class="form-label fw-bold">Preferred Date <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i
+                                            class="far fa-calendar-alt text-primary"></i></span>
+                                    <input type="date" id="date_input" class="form-control border-start-0 ps-0"
+                                        required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="time_input" class="form-label fw-bold">Preferred Time <span
+                                        class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i
+                                            class="far fa-clock text-primary"></i></span>
+                                    <input type="time" id="time_input" class="form-control border-start-0 ps-0" step="900" required>
+                                </div>
+                                <div class="form-text text-muted">Sessions are scheduled in 15-minute blocks.</div>
+                            </div>
+                        </div>
+
+                        <!-- Duration and Pricing -->
+                        <div class="row g-3 mb-4 align-items-end">
+                            <div class="col-md-6">
+                                <label for="id_duration_minutes" class="form-label fw-bold">Duration <span
+                                    class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i
+                                            class="fas fa-hourglass-half text-primary"></i></span>
+                                    <select name="duration_minutes" id="id_duration_minutes" class="form-control border-start-0 ps-0" required>
+                                        {% for val, label in form.fields.duration_minutes.choices %}
+                                            <option value="{{ val }}" {% if form.duration_minutes.value|default:15|add:0 == val|add:0 %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small fw-bold text-uppercase">Total Cost:</span>
+                                        <span id="price-display" class="h4 mb-0 text-primary fw-bold">Rs. 500</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Scheduled At Field (Synced via JS) -->
+                        <input type="hidden" name="scheduled_at" id="id_scheduled_at" value="">
+
+                        <!-- Tags -->
+                        <div class="mb-4">
+                            <label for="id_tags" class="form-label fw-bold">Tags <span
+                                    class="text-muted fw-normal">(Optional)</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i
+                                        class="fas fa-tags text-primary"></i></span>
+                                {{ form.tags }}
+                            </div>
+                            <div class="form-text">Comma separated (e.g. Python, Design, Career)</div>
+                        </div>
+
+                        <!-- Flexibility -->
+                        <div class="mb-4">
+                            <label for="id_flexibility_comments" class="form-label fw-bold">Flexibility / Comments <span
+                                    class="text-muted fw-normal">(Optional)</span></label>
+                            <textarea name="flexibility_comments" cols="40" rows="2" class="form-control"
+                                placeholder="e.g. Can start 30 mins before or after"
+                                id="id_flexibility_comments">{{ form.flexibility_comments.value|default:'' }}</textarea>
+                        </div>
+
+                        <!-- Meeting Link (Removed from Initial Form as per Implementation Plan) -->
+                        {% if title == 'Edit Session' %}
+                        <div class="mb-5">
+                            <label for="id_meeting_link" class="form-label fw-bold">Google Meet / Zoom Link <span
+                                    class="text-muted fw-normal">(Optional)</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i
+                                        class="fas fa-video text-primary"></i></span>
+                                <input type="url" name="meeting_link" class="form-control border-start-0 ps-0"
+                                    placeholder="https://meet.google.com/xxx-yyyy-zzz" id="id_meeting_link"
+                                    value="{{ form.meeting_link.value|default:'' }}">
+                            </div>
+                            <div class="form-text">Verified sessions automatically generate a Google Meet link.</div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Submit Button -->
+                        <div class="mt-4 row g-3">
+                            <div class="col-6">
+                                <button type="submit"
+                                    class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm hover-scale">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    {% if title == 'Edit Session' %}
+                                    Update Session
+                                    {% elif user.is_mentor %}
+                                    Post Session
+                                    {% else %}
+                                    Request Session
+                                    {% endif %}
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <a href="{% url 'home:browse_sessions' %}"
+                                    class="btn btn-outline-secondary w-100 py-3 rounded-pill fw-bold hover-scale">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .nature-card {
+        transition: all 0.3s ease;
+        border-width: 2px !important;
+    }
+
+    .btn-check:checked+.nature-card {
+        border-color: #0d6efd !important;
+        background-color: rgba(13, 110, 253, 0.05) !important;
+        transform: translateY(-5px);
+    }
+
+    .hover-scale {
+        transition: transform 0.2s ease;
+    }
+
+    .hover-scale:hover {
+        transform: scale(1.02);
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dateInput = document.getElementById('date_input');
+        const timeInput = document.getElementById('time_input');
+        const hiddenInput = document.getElementById('id_scheduled_at');
+
+        // Function to round time to nearest 15 minutes
+        function roundTimeToNearest15(timeStr) {
+            if (!timeStr) return timeStr;
+            let parts = timeStr.split(':');
+            if (parts.length < 2) return timeStr;
+            
+            let hours = parseInt(parts[0]);
+            let minutes = parseInt(parts[1]);
+            
+            let remainder = minutes % 15;
+            // Round to nearest 15 minutes
+            if (remainder >= 8) {
+                minutes += (15 - remainder);
+            } else {
+                minutes -= remainder;
+            }
+            
+            if (minutes >= 60) {
+                minutes = 0;
+                hours = (hours + 1) % 24;
+            }
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        // Apply rounding when user interacts
+        timeInput.addEventListener('change', function() {
+            if (this.value) {
+                this.value = roundTimeToNearest15(this.value);
+                updateHidden();
+            }
+        });
+
+        // Calculate next 15-minute interval for default selection
+        const now = new Date();
+        let currentMinutes = now.getMinutes();
+        let currentHours = now.getHours();
+        
+        let remainder = currentMinutes % 15;
+        let next15 = currentMinutes + (15 - remainder);
+        
+        if (next15 >= 60) {
+            next15 = 0;
+            currentHours = (currentHours + 1) % 24;
+        }
+        
+        const defaultTimeValue = `${currentHours.toString().padStart(2, '0')}:${next15.toString().padStart(2, '0')}`;
+
+        // Check for existing value to populate (for Edit)
+        const existingVal = "{{ form.scheduled_at.value|date:'c'|default:'' }}";
+
+        if (existingVal) {
+            const dt = new Date(existingVal);
+            if (!isNaN(dt.getTime())) {
+                dateInput.value = dt.toISOString().split('T')[0];
+                timeInput.value = roundTimeToNearest15(dt.toTimeString().slice(0, 5));
+                hiddenInput.value = existingVal;
+            }
+        } else {
+            // Set default date to today and time to next 15-min interval
+            dateInput.value = now.toISOString().split('T')[0];
+            timeInput.value = defaultTimeValue;
+            updateHidden();
+        }
+
+        function updateHidden() {
+            if (dateInput.value && timeInput.value) {
+                hiddenInput.value = dateInput.value + 'T' + timeInput.value;
+            }
+        }
+
+        dateInput.addEventListener('change', updateHidden);
+        timeInput.addEventListener('change', updateHidden);
+
+        // Dynamic Pricing Calculation
+        const durationSelect = document.getElementById('id_duration_minutes');
+        const priceDisplay = document.getElementById('price-display');
+
+        function updatePrice() {
+            const minutes = parseInt(durationSelect.value) || 15;
+            const price = (minutes / 15) * 500;
+            priceDisplay.textContent = `Rs. ${price.toLocaleString()}`;
+        }
+
+        durationSelect.addEventListener('change', updatePrice);
+        updatePrice(); // Initial calculation
+
+        // Bootstrap Validation
+        const form = document.getElementById('sessionForm');
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+</script>
+{% endblock %}

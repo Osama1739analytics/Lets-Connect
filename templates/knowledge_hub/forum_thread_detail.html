@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ thread.title }} - Discussion Forum{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home:hub_dashboard' %}" class="text-decoration-none">Knowledge Hub</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'home:forum_list' %}" class="text-decoration-none">Forum</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ thread.title|truncatechars:30 }}</li>
+        </ol>
+    </nav>
+
+    <!-- Thread Content -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-lg-5 mb-5">
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary fw-bold" style="width: 48px; height: 48px; font-size: 1.1rem;">
+                    {{ thread.author.username|slice:":2"|upper }}
+                </div>
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">@{{ thread.author.username }}</h6>
+                    <small class="text-muted">{{ thread.author.get_user_type_display }} • {{ thread.created_at|timesince }} ago</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                {% if request.user == thread.author or request.user.is_staff %}
+                <form action="{% url 'home:delete_forum_thread' thread.id %}" method="POST" onsubmit="return confirm('Are you sure you want to delete this discussion thread?');" class="d-inline me-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">
+                        <i class="fas fa-trash-alt me-1"></i>Delete Thread
+                    </button>
+                </form>
+                {% endif %}
+                <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded fw-bold">{{ thread.category.name|default:"General" }}</span>
+            </div>
+        </div>
+
+        <h2 class="fw-bold text-dark mb-4">{{ thread.title }}</h2>
+        <div class="text-secondary lh-lg mb-0" style="font-size: 1.1rem; white-space: pre-wrap;">
+            {{ thread.content }}
+        </div>
+    </div>
+
+    <!-- Replies / Comments Section -->
+    <div class="mb-5">
+        <h4 class="fw-bold text-dark mb-4"><i class="far fa-comments text-primary me-2"></i>Comments & Replies ({{ comments|length }})</h4>
+        
+        <div class="row g-3 mb-5">
+            {% for comment in comments %}
+            <div class="col-12 animate__animated animate__fadeInUp">
+                <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                {{ comment.author.username|slice:":2"|upper }}
+                            </div>
+                            <div>
+                                <span class="fw-bold text-dark small">@{{ comment.author.username }}</span>
+                                <span class="badge bg-light text-muted small ms-1" style="font-size: 0.65rem;">{{ comment.author.get_user_type_display }}</span>
+                            </div>
+                        </div>
+                        <small class="text-muted" style="font-size: 0.8rem;"><i class="far fa-clock me-1"></i>{{ comment.created_at|timesince }} ago</small>
+                    </div>
+                    
+                    <p class="text-secondary mb-0" style="white-space: pre-wrap;">{{ comment.content }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-4 bg-light rounded-4">
+                <p class="text-muted mb-0">No comments posted yet. Start the conversation!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Post Comment Box -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-lg-5">
+        <h4 class="fw-bold text-dark mb-3">Leave a Reply</h4>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-4">
+                {{ form.content }}
+                {% if form.content.errors %}
+                <div class="text-danger small mt-1">{{ form.content.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">Post Comment</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Browse - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8 text-center text-md-start">
+        <h1 class="display-5 fw-bold text-dark mb-2">Browse <span class="text-primary">Opportunities</span></h1>
+        <p class="text-secondary mb-0">
+            {% if section == 'people' %}
+            Find mentors and mentees across the platform and grow your network.
+            {% else %}
+            Discover mentorship posts, student requests, and sessions tailored to you.
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-4 text-center text-md-end mt-4 mt-md-0">
+        {% if section == 'sessions' %}
+        <a href="{% url 'home:create_session' %}" class="btn btn-primary btn-lg rounded-pill px-4 shadow-lg hover-up">
+            <i class="fas fa-plus-circle me-2"></i>Create New Entry
+        </a>
+        {% else %}
+        <a href="{% url 'home:manage_connect_requests' %}" class="btn btn-outline-primary btn-lg rounded-pill px-4 shadow-sm hover-up">
+            <i class="fas fa-user-plus me-2"></i>My Requests
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Section Toggle -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="browse-toggle-card card border-0 shadow-sm rounded-4 p-2 mx-auto" style="max-width: 520px;">
+            <div class="browse-toggle d-flex gap-2" role="tablist" aria-label="Browse section">
+                <a href="?section=sessions{% if session_q %}&session_q={{ session_q|urlencode }}{% endif %}{% if session_type %}&session_type={{ session_type|urlencode }}{% endif %}{% if people_q %}&people_q={{ people_q|urlencode }}{% endif %}{% if people_type %}&people_type={{ people_type|urlencode }}{% endif %}"
+                   class="browse-toggle-btn flex-fill {% if section == 'sessions' %}active{% endif %}"
+                   role="tab"
+                   aria-selected="{% if section == 'sessions' %}true{% else %}false{% endif %}">
+                    <i class="fas fa-calendar-alt me-2"></i>Sessions
+                </a>
+                <a href="?section=people{% if session_q %}&session_q={{ session_q|urlencode }}{% endif %}{% if session_type %}&session_type={{ session_type|urlencode }}{% endif %}{% if people_q %}&people_q={{ people_q|urlencode }}{% endif %}{% if people_type %}&people_type={{ people_type|urlencode }}{% endif %}"
+                   class="browse-toggle-btn flex-fill {% if section == 'people' %}active{% endif %}"
+                   role="tab"
+                   aria-selected="{% if section == 'people' %}true{% else %}false{% endif %}">
+                    <i class="fas fa-users me-2"></i>People
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% if section == 'sessions' %}
+    <div class="col-12" id="sessions">
+        {% include 'includes/sessions_search_form.html' %}
+
+        {% if has_your_sessions %}
+        <div class="col-12 mt-2">
+            <div class="section-header d-flex align-items-center gap-3 mb-4">
+                <div class="icon-box-lg bg-primary text-white shadow-sm">
+                    <i class="fas fa-user-edit"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0">Your Active Entries</h4>
+                    <p class="text-muted small mb-0">Manage and track your own posts.</p>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for session in your_sessions %}
+                    {% include 'includes/session_card.html' %}
+                {% endfor %}
+            </div>
+            <hr class="my-5 opacity-10">
+        </div>
+        {% endif %}
+
+        {% if recommended_mentors %}
+        <div class="col-12">
+            <div class="section-header d-flex align-items-center gap-3 mb-4">
+                <div class="icon-box-lg bg-info text-white shadow-sm">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0">AI Recommended Mentors</h4>
+                    <p class="text-muted small mb-0">Experts who match your learning goals.</p>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for mentor in recommended_mentors %}
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-up transition-all">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-sm bg-info text-white me-3 fw-bold" style="width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                {{ mentor.username|first|upper }}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold mb-0">{{ mentor.full_name|default:mentor.username }}</h6>
+                                <span class="badge bg-success-subtle text-success small py-1 px-2 rounded-pill">Match: {{ mentor.match_count }}</span>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3 line-clamp-2">{{ mentor.mentor_expertise|default:"Expert in multiple domains." }}</p>
+                        <div class="mt-auto d-flex gap-2">
+                            {% if mentor.id in connected_user_ids %}
+                            <button class="btn btn-success-subtle text-success w-100 rounded-pill btn-sm fw-bold border-0" disabled><i class="fas fa-check me-1"></i>Connected</button>
+                            {% elif mentor.id in pending_user_ids %}
+                            <button class="btn btn-warning-subtle text-warning w-100 rounded-pill btn-sm fw-bold border-0" disabled><i class="fas fa-hourglass-half me-1"></i>Pending</button>
+                            {% else %}
+                            <form action="{% url 'home:send_connect_request' mentor.id %}" method="POST" class="w-100 m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary w-100 rounded-pill btn-sm fw-bold">Connect</button>
+                            </form>
+                            {% endif %}
+                            <a href="{% url 'home:public_profile' mentor.username %}" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="fas fa-user"></i></a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <hr class="my-5 opacity-10">
+        </div>
+        {% endif %}
+
+        {% if has_recommendations %}
+        <div class="col-12">
+            <div class="section-header d-flex align-items-center gap-3 mb-4">
+                <div class="icon-box-lg bg-warning text-white shadow-sm">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0">Recommended for You</h4>
+                    <p class="text-muted small mb-0">Sessions tailored to your interests.</p>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for session in recommended_sessions %}
+                    {% include 'includes/session_card.html' %}
+                {% endfor %}
+            </div>
+            <hr class="my-5 opacity-10">
+        </div>
+        {% endif %}
+
+        <div class="col-12">
+            <div class="row g-5">
+                {% if mentor_posts %}
+                <div class="col-12">
+                    <h4 class="fw-bold mb-4 d-flex align-items-center">
+                        <i class="fas fa-chalkboard-teacher text-primary me-2"></i> Available Mentorship
+                    </h4>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for session in mentor_posts %}
+                            {% include 'includes/session_card.html' %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if mentee_requests %}
+                <div class="col-12 {% if mentor_posts %}mt-5{% endif %}">
+                    <h4 class="fw-bold mb-4 d-flex align-items-center">
+                        <i class="fas fa-hand-holding-heart text-info me-2"></i> Student Requests
+                    </h4>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for session in mentee_requests %}
+                            {% include 'includes/session_card.html' %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if not has_session_results %}
+        <div class="col-12 text-center py-5">
+            <div class="glass-container p-5 rounded-4 mx-auto" style="max-width: 500px; background: rgba(var(--primary-rgb), 0.05); border: 1px solid var(--border-color);">
+                {% if session_q or session_type %}
+                <i class="fas fa-search fs-1 text-muted opacity-50 mb-4"></i>
+                <h3 class="fw-bold">No Sessions Found</h3>
+                <p class="text-secondary mb-4">Try a different search term or session type filter.</p>
+                <a href="?section=sessions" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Clear Filters</a>
+                {% else %}
+                <i class="fas fa-calendar-times fs-1 text-muted opacity-50 mb-4"></i>
+                <h3 class="fw-bold">No Sessions Available</h3>
+                <p class="text-secondary mb-4">Be the first to start a conversation by creating a new entry.</p>
+                <a href="{% url 'home:create_session' %}" class="btn btn-primary rounded-pill px-4 fw-bold">Post a Session</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <div class="col-12" id="people">
+        {% include 'includes/people_search_form.html' with section='people' %}
+
+        {% if platform_users %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for person in platform_users %}
+                {% include 'includes/user_card.html' with person=person %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-user-slash fs-1 text-muted opacity-25 mb-4"></i>
+            <h5 class="fw-bold text-muted">No people found</h5>
+            <p class="text-secondary mb-4">Try a different name or role filter.</p>
+            {% if people_q or people_type %}
+            <a href="?section=people" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Clear Filters</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .icon-box-lg {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+    .section-header p { font-size: 0.9rem; }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .browse-toggle-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.85rem 1.25rem;
+        border-radius: 999px;
+        font-weight: 700;
+        text-decoration: none;
+        color: var(--bs-secondary);
+        background: transparent;
+        transition: all 0.2s ease;
+    }
+    .browse-toggle-btn:hover {
+        color: var(--bs-primary);
+        background: rgba(var(--primary-rgb), 0.08);
+    }
+    .browse-toggle-btn.active {
+        color: #fff;
+        background: linear-gradient(135deg, #2a5d84 0%, #3d8ccb 100%);
+        box-shadow: 0 8px 20px rgba(42, 93, 132, 0.25);
+    }
+</style>
+
+<script>
+    function openDeleteModal(sessionId, sessionName) {
+        document.getElementById('deleteSessionName').textContent = sessionName;
+        document.getElementById('deleteForm').action = `/sessions/${sessionId}/delete/`;
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}
+
+{% block modals %}
+<!-- Custom Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-body p-5 text-center">
+                <i class="fas fa-exclamation-triangle text-danger mb-4" style="font-size: 4rem;"></i>
+                <h3 class="fw-bold">Delete Session?</h3>
+                <p class="text-secondary mb-4">Are you sure you want to delete <strong id="deleteSessionName" class="text-dark"></strong>? This cannot be undone.</p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="POST" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Confirm Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

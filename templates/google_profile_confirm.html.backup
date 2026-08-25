@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #2a5d84;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #2a5d84;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(42, 93, 132, 0.1);
+        }
+
+        .user-type-section {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .user-type-section>label {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .user-type-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .user-type-option {
+            position: relative;
+        }
+
+        .user-type-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .user-type-card {
+            border: 2px solid #e1e5e9;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: white;
+        }
+
+        .user-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border-color: #cbd5e0;
+        }
+
+        .user-type-option input[type="radio"]:checked+.user-type-card {
+            border-color: #2a5d84;
+            background: linear-gradient(145deg, #2a5d84, #1e4a6b);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(42, 93, 132, 0.2);
+        }
+
+        .user-type-card h4 {
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .user-type-card p {
+            font-size: 0.9em;
+            line-height: 1.4;
+            opacity: 0.9;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #2a5d84, #1e4a6b);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(42, 93, 132, 0.2);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        ul {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 5px;
+            list-style: none;
+            padding: 0;
+        }
+
+        @media (max-width: 768px) {
+
+            .form-row,
+            .user-type-options {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Confirm your profile</h1>
+        <p class="subtitle">We received your basic info from Google. Please confirm and complete required details.</p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}<ul>{{ form.full_name.errors }}</ul>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    {{ form.email }}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    {{ form.contact_number }}
+                    {% if form.contact_number.errors %}<ul>{{ form.contact_number.errors }}</ul>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<ul>{{ form.username.errors }}</ul>{% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Gender</label>
+                    {{ form.gender }}
+                    {% if form.gender.errors %}<ul>{{ form.gender.errors }}</ul>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Set Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}<ul>{{ form.password.errors }}</ul>{% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    {{ form.password_confirm }}
+                    {% if form.password_confirm.errors %}<ul>{{ form.password_confirm.errors }}</ul>{% endif %}
+                </div>
+            </div>
+
+            <div class="user-type-section">
+                <label>I am a:</label>
+                <div class="user-type-options">
+                    <div class="user-type-option">
+                        <input type="radio" id="user_type_mentee" name="user_type" value="mentee" {% if
+                            form.user_type.value=='mentee' %}checked{% endif %}>
+                        <label for="user_type_mentee" class="user-type-card">
+                            <h4>Mentee</h4>
+                            <p>I'm seeking guidance and mentorship to grow professionally</p>
+                        </label>
+                    </div>
+                    <div class="user-type-option">
+                        <input type="radio" id="user_type_mentor" name="user_type" value="mentor" {% if
+                            form.user_type.value=='mentor' %}checked{% endif %}>
+                        <label for="user_type_mentor" class="user-type-card">
+                            <h4>Mentor</h4>
+                            <p>I'm an experienced professional ready to guide others</p>
+                        </label>
+                    </div>
+                </div>
+                {% if form.user_type.errors %}<ul>{{ form.user_type.errors }}</ul>{% endif %}
+            </div>
+
+            <button type="submit">Confirm & Continue</button>
+        </form>
+    </div>
+</body>
+
+</html>

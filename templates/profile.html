@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ user.full_name|default:user.username }} - Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-10">
+        <!-- Profile Header Card -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="profile-banner bg-primary py-5 px-4 text-center text-white position-relative">
+                <!-- Floating background shapes -->
+                <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+                
+                <div class="avatar-large bg-white text-primary mx-auto mb-3 shadow-lg d-flex align-items-center justify-content-center fw-bold"
+                    style="width: 120px; height: 120px; border-radius: 50%; font-size: 3.5rem; border: 5px solid rgba(255,255,255,0.3); position: relative; z-index: 2;">
+                    {{ user.username|first|upper }}
+                </div>
+                
+                <h1 class="fw-bold mb-1" style="position: relative; z-index: 2;">{{ user.full_name|default:user.username }}</h1>
+                <div class="d-flex justify-content-center gap-2 mb-4" style="position: relative; z-index: 2;">
+                    <span class="badge {% if user.user_type == 'mentor' %}bg-warning text-dark{% else %}bg-info text-white{% endif %} px-3 py-2 rounded-pill fw-bold">
+                        <i class="fas {% if user.user_type == 'mentor' %}fa-chalkboard-teacher{% else %}fa-user-graduate{% endif %} me-1"></i>
+                        {{ user.user_type|upper }}
+                    </span>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-center gap-2 mb-3" style="position: relative; z-index: 2;">
+                    <a href="{% url 'home:edit_profile' %}" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm hover-up">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </a>
+                    {% if not user.is_calendar_connected %}
+                    <form action="{% url 'social:begin' 'google-oauth2' %}" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit" class="btn btn-light text-primary rounded-pill px-4 fw-bold shadow-sm hover-up border-0">
+                            <i class="fab fa-google me-2"></i>Connect Google Calendar
+                        </button>
+                    </form>
+                    {% endif %}
+
+
+                </div>
+                <p class="small opacity-75 mb-0" style="position: relative; z-index: 2;">Update your details or sync with Google for easier session management.</p>
+            </div>
+
+            <div class="card-body p-4 p-lg-5">
+                <!-- Info Grid -->
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="info-card-v2 p-4 h-100 rounded-4 transition-all">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-primary-subtle text-primary me-3">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <h6 class="text-muted text-uppercase fw-bold small mb-0">Username</h6>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-dark">{{ user.username }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="info-card-v2 p-4 h-100 rounded-4 transition-all">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-info-subtle text-info me-3">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <h6 class="text-muted text-uppercase fw-bold small mb-0">Email Address</h6>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-dark">{{ user.email }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="info-card-v2 p-4 h-100 rounded-4 transition-all">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-success-subtle text-success me-3">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <h6 class="text-muted text-uppercase fw-bold small mb-0">Contact Number</h6>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-dark">{{ user.contact_number|default:"Not provided" }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="info-card-v2 p-4 h-100 rounded-4 transition-all">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-warning-subtle text-warning me-3">
+                                    <i class="fas fa-birthday-cake"></i>
+                                </div>
+                                <h6 class="text-muted text-uppercase fw-bold small mb-0">Age</h6>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-dark">{% if user.age %}{{ user.age }} Years Old{% else %}Not specified{% endif %}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="info-card-v2 p-4 h-100 rounded-4 transition-all">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="icon-box bg-danger-subtle text-danger me-3">
+                                    <i class="fas fa-genderless"></i>
+                                </div>
+                                <h6 class="text-muted text-uppercase fw-bold small mb-0">Gender</h6>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-dark">{{ user.gender|capfirst|default:"Not specified" }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="info-card-v2 p-4 h-100 rounded-4 transition-all border-dashed">
+                            <a href="{% url 'home:edit_profile' %}" class="text-decoration-none d-flex flex-column align-items-center justify-content-center h-100 text-muted hover-primary">
+                                <i class="fas fa-plus-circle mb-2 fs-3"></i>
+                                <span class="fw-bold">Update Profile</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Details Section -->
+                {% if user.user_type == 'mentor' %}
+                <div class="mt-5 pt-4 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold text-dark mb-0"><i class="fas fa-briefcase text-primary me-2"></i>Professional Profile</h4>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="info-card-v2 p-4 rounded-4">
+                                <h6 class="text-muted text-uppercase fw-bold small mb-3">Biography</h6>
+                                <p class="text-dark mb-0 lh-lg">{{ user.mentor_bio|default:"Tell the community about yourself by editing your profile." }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card-v2 p-4 rounded-4 h-100">
+                                <h6 class="text-muted text-uppercase fw-bold small mb-3">Expertise</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% if user.mentor_expertise %}
+                                        {% for skill in user.mentor_expertise.split|slice:":5" %}
+                                        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">{{ skill }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted italic">Not specified</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card-v2 p-4 rounded-4 h-100">
+                                <h6 class="text-muted text-uppercase fw-bold small mb-3">Payment Info (Visible to Mentees)</h6>
+                                <div class="small fw-bold text-dark">
+                                    <div class="mb-1"><i class="fas fa-university me-2 text-muted"></i>{{ user.payment_method|default:"Method not set" }}</div>
+                                    <div><i class="fas fa-id-card me-2 text-muted"></i>{{ user.account_number_or_iban|default:"Account not set" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="mt-5 pt-4 border-top">
+                    <h4 class="fw-bold text-dark mb-4"><i class="fas fa-graduation-cap text-primary me-2"></i>Academic Profile</h4>
+                    <div class="info-card-v2 p-4 rounded-4">
+                        <h6 class="text-muted text-uppercase fw-bold small mb-3">Learning Goals</h6>
+                        <p class="text-dark mb-0 lh-lg">{{ user.learning_goals|default:"Set your learning goals to help mentors guide you better." }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Stats Row -->
+        <div class="row g-4 mb-5">
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 transition-all hover-up">
+                    <div class="icon-circle bg-primary text-white mx-auto mb-2">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">{{ user.total_connections }}</h3>
+                    <span class="text-muted small fw-bold">Connections</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 transition-all hover-up">
+                    <div class="icon-circle bg-success text-white mx-auto mb-2">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">{{ user.total_sessions }}</h3>
+                    <span class="text-muted small fw-bold">Sessions</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 transition-all hover-up">
+                    <div class="icon-circle bg-warning text-white mx-auto mb-2">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">{{ user.average_rating }}</h3>
+                    <span class="text-muted small fw-bold">Rating</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 transition-all hover-up">
+                    <div class="icon-circle bg-info text-white mx-auto mb-2">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">{{ user.total_hours }}</h3>
+                    <span class="text-muted small fw-bold">Hours Spent</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-banner {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
+    }
+
+    .info-card-v2 {
+        background: var(--bg-soft);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .info-card-v2:hover {
+        background: var(--bg-card);
+        border-color: var(--primary);
+        box-shadow: 0 10px 15px -3px rgba(var(--primary-rgb), 0.1);
+        transform: translateY(-2px);
+    }
+
+    .border-dashed {
+        border: 2px dashed var(--border-color) !important;
+        background: transparent !important;
+    }
+
+    .border-dashed:hover {
+        border-color: var(--primary) !important;
+    }
+
+    .icon-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .icon-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .hover-up:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .hover-primary:hover {
+        color: #6366f1 !important;
+    }
+
+    .avatar-large {
+        transition: transform 0.3s ease;
+    }
+
+    .avatar-large:hover {
+        transform: scale(1.05) rotate(5deg);
+    }
+
+    /* Accessibility & Cursor */
+    .cursor-default { cursor: default; }
+
+    /* Custom Mobile Spacing */
+    @media (max-width: 576px) {
+        .card-body { padding: 1.5rem !important; }
+        .info-card-v2 { padding: 1.25rem !important; }
+    }
+</style>
+{% endblock %}

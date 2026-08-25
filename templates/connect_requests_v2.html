@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Networking Hub - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="row mb-5 align-items-center">
+    <div class="col-md-8 text-center text-md-start">
+        <h1 class="display-5 fw-bold text-dark mb-2">Networking <span class="text-primary">Hub</span></h1>
+        <p class="text-secondary mb-0">Manage your connection requests and grow your professional network.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Sidebar Navigation -->
+    <div class="col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top" style="top: 100px; z-index: 100;">
+            <div class="list-group list-group-flush p-2">
+                <a href="?tab=pending" class="list-group-item list-group-item-action py-3 border-0 rounded-3 mb-1 {% if tab == 'pending' %}bg-primary text-white shadow-sm{% else %}text-secondary{% endif %}">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span><i class="fas fa-user-plus me-2"></i>Pending</span>
+                        <span class="badge {% if tab == 'pending' %}bg-white text-primary{% else %}bg-primary-subtle text-primary{% endif %} rounded-pill">{{ incoming.count }}</span>
+                    </div>
+                </a>
+                <a href="?tab=connections" class="list-group-item list-group-item-action py-3 border-0 rounded-3 {% if tab == 'connections' %}bg-primary text-white shadow-sm{% else %}text-secondary{% endif %}">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span><i class="fas fa-users me-2"></i>Connections</span>
+                        <span class="badge {% if tab == 'connections' %}bg-white text-primary{% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill">{{ my_connections.count }}</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+        <div class="card border-0 shadow-sm rounded-4 min-vh-50">
+            <div class="card-header bg-transparent border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold mb-0">{% if tab == 'pending' %}Incoming Requests{% else %}My Professional Circle{% endif %}</h4>
+            </div>
+            
+            <div class="card-body p-4">
+                {% if tab == 'pending' %}
+                    {% if incoming %}
+                        <div class="row g-4">
+                            {% for req in incoming %}
+                            <div class="col-12">
+                                <div class="networking-card p-4 rounded-4 border border-light-subtle bg-light-subtle hover-up transition-all">
+                                    <div class="d-flex flex-column flex-md-row gap-4 align-items-center align-items-md-start">
+                                        <div class="avatar-box bg-primary text-white shadow-sm d-flex align-items-center justify-content-center fw-bold" style="width: 80px; height: 80px; border-radius: 20px; font-size: 2rem;">
+                                            {{ req.sender.username|first|upper }}
+                                        </div>
+                                        <div class="flex-grow-1 text-center text-md-start">
+                                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+                                                <div>
+                                                    <h5 class="fw-bold mb-1"><a href="{% url 'home:public_profile' req.sender.username %}" class="text-dark text-decoration-none hover-primary">{{ req.sender.full_name|default:req.sender.username }}</a></h5>
+                                                    <span class="badge {% if req.sender.user_type == 'mentor' %}bg-warning-subtle text-warning{% else %}bg-info-subtle text-info{% endif %} rounded-pill px-3 py-1 fw-bold">
+                                                        <i class="fas {% if req.sender.user_type == 'mentor' %}fa-chalkboard-teacher{% else %}fa-user-graduate{% endif %} me-1"></i>
+                                                        {{ req.sender.user_type|upper }}
+                                                    </span>
+                                                </div>
+                                                <span class="text-muted small mt-2 mt-md-0"><i class="far fa-clock me-1"></i>{{ req.created_at|timesince }} ago</span>
+                                            </div>
+                                            
+                                            <p class="text-secondary small mb-4 lh-base">{{ req.sender.mentor_bio|default:"Interested in connecting and exploring opportunities together."|truncatechars:150 }}</p>
+                                            
+                                            <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
+                                                <form method="POST" class="m-0">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                                                    <button type="submit" name="action" value="accept" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Accept Request</button>
+                                                </form>
+                                                <form method="POST" class="m-0">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                                                    <button type="submit" name="action" value="reject" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Decline</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fs-1 text-muted opacity-25 mb-4"></i>
+                            <h5 class="fw-bold text-muted">No pending requests</h5>
+                            <p class="text-secondary mb-4">You're all caught up! Browse others to send some requests.</p>
+                            <a href="{% url 'home:browse_sessions' %}?section=people" class="btn btn-primary rounded-pill px-4 shadow-sm">Discover People</a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {% if my_connections %}
+                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                            {% for conn in my_connections %}
+                            {% with other_user=conn.sender|default_if_none:conn.receiver %}
+                            {% if other_user == request.user %}{% with other_user=conn.receiver %}{% endwith %}{% endif %}
+                            <div class="col">
+                                <div class="networking-card p-4 rounded-4 border border-light-subtle hover-up transition-all h-100 text-center">
+                                    <div class="avatar-box bg-success-subtle text-success shadow-sm mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold" style="width: 70px; height: 70px; border-radius: 50%; font-size: 1.8rem;">
+                                        {% if conn.sender == request.user %}{{ conn.receiver.username|first|upper }}{% else %}{{ conn.sender.username|first|upper }}{% endif %}
+                                    </div>
+                                    <h6 class="fw-bold mb-1">
+                                        {% if conn.sender == request.user %}
+                                            <a href="{% url 'home:public_profile' conn.receiver.username %}" class="text-dark text-decoration-none hover-primary">{{ conn.receiver.full_name|default:conn.receiver.username }}</a>
+                                        {% else %}
+                                            <a href="{% url 'home:public_profile' conn.sender.username %}" class="text-dark text-decoration-none hover-primary">{{ conn.sender.full_name|default:conn.sender.username }}</a>
+                                        {% endif %}
+                                    </h6>
+                                    <p class="text-muted small mb-4">
+                                        {% if conn.sender == request.user %}{{ conn.receiver.user_type|title }}{% else %}{{ conn.sender.user_type|title }}{% endif %}
+                                        <br>
+                                        <span class="x-small">Since {{ conn.updated_at|date:"M Y" }}</span>
+                                    </p>
+                                    <div class="d-grid gap-2">
+                                        {% if conn.sender == request.user %}
+                                            <a href="{% url 'home:chat_room' conn.receiver.id %}" class="btn btn-primary rounded-pill btn-sm fw-bold shadow-sm py-2">Message</a>
+                                            <button onclick="confirmDisconnect('{{ conn.receiver.username }}', '{% url 'home:disconnect_user' conn.receiver.id %}')" class="btn btn-link text-danger btn-sm text-decoration-none fw-bold">Disconnect</button>
+                                        {% else %}
+                                            <a href="{% url 'home:chat_room' conn.sender.id %}" class="btn btn-primary rounded-pill btn-sm fw-bold shadow-sm py-2">Message</a>
+                                            <button onclick="confirmDisconnect('{{ conn.sender.username }}', '{% url 'home:disconnect_user' conn.sender.id %}')" class="btn btn-link text-danger btn-sm text-decoration-none fw-bold">Disconnect</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endwith %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users-slash fs-1 text-muted opacity-25 mb-4"></i>
+                            <h5 class="fw-bold text-muted">No connections yet</h5>
+                            <p class="text-secondary mb-4">Grow your professional network by connecting with experts.</p>
+                            <a href="{% url 'home:browse_sessions' %}?section=people" class="btn btn-primary rounded-pill px-4 shadow-sm">Discover People</a>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<style>
+    .min-vh-50 { min-height: 50vh; }
+    .networking-card { border: 1px solid var(--border-color); }
+    .x-small { font-size: 0.7rem; }
+</style>
+
+<script>
+    function confirmDisconnect(username, url) {
+        document.getElementById('disconnect-username').textContent = username;
+        document.getElementById('disconnect-form').action = url;
+        new bootstrap.Modal(document.getElementById('disconnectModal')).show();
+    }
+</script>
+{% endblock %}
+
+{% block modals %}
+<!-- Modal -->
+<div class="modal fade" id="disconnectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-body p-4 text-center">
+                <i class="fas fa-user-times text-danger fs-1 mb-4"></i>
+                <h4 class="fw-bold">Disconnect?</h4>
+                <p class="text-secondary small mb-4">Remove <strong id="disconnect-username" class="text-dark"></strong> from your network?</p>
+                <form id="disconnect-form" method="POST">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger rounded-pill fw-bold">Confirm</button>
+                        <button type="button" class="btn btn-light rounded-pill fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

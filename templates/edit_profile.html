@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-header bg-gradient py-4 text-center border-0"
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h2 class="text-white mb-0 fw-bold"><i class="fas fa-user-edit me-2"></i>Edit Profile</h2>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" id="profileForm">
+                        {% csrf_token %}
+
+                        <!-- Basic Information Section -->
+                        <div class="mb-5">
+                            <h4 class="border-bottom pb-2 mb-4 text-primary"><i class="fas fa-id-card me-2"></i>Basic
+                                Information</h4>
+
+                            <div class="mb-3">
+                                <label for="id_full_name" class="form-label fw-bold">Full Name</label>
+                                {{ form.full_name }}
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="id_contact_number" class="form-label fw-bold">Contact Number</label>
+                                    {{ form.contact_number }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_age" class="form-label fw-bold">Age</label>
+                                    {{ form.age }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_gender" class="form-label fw-bold">Gender</label>
+                                    {{ form.gender }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Skills/Expertise Tags -->
+                        <div class="mb-5">
+                            <h4 class="border-bottom pb-2 mb-4 text-primary"><i class="fas fa-tags me-2"></i>Skills &
+                                Expertise</h4>
+                            <div class="mb-3">
+                                <label for="id_skills" class="form-label fw-bold">Your Skills <span
+                                        class="text-muted fw-normal">(for matching)</span></label>
+                                {{ form.skills }}
+                                <div class="form-text">Add comma-separated tags like: Python, Machine Learning, Career
+                                    Advice, Web Development</div>
+                            </div>
+                        </div>
+
+                        <!-- Mentee-Specific Fields -->
+                        {% if user.user_type == 'mentee' %}
+                        <div class="mb-5">
+                            <h4 class="border-bottom pb-2 mb-4 text-success"><i
+                                    class="fas fa-graduation-cap me-2"></i>Learning Profile (Mentee)</h4>
+
+                            <div class="mb-3">
+                                <label for="id_learning_goals" class="form-label fw-bold">Learning Goals</label>
+                                {{ form.learning_goals }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_subjects_interested_in" class="form-label fw-bold">Subjects of
+                                    Interest</label>
+                                {{ form.subjects_interested_in }}
+                                <div class="form-text">Topics you want to learn about</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_current_skill_level" class="form-label fw-bold">Current Skill
+                                    Level</label>
+                                {{ form.current_skill_level }}
+                                <div class="form-text">e.g., Beginner, Intermediate, Advanced</div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if user.user_type == 'mentor' %}
+                        <div class="mb-5">
+                            <h4 class="border-bottom pb-2 mb-4 text-warning"><i
+                                    class="fas fa-chalkboard-teacher me-2"></i>Teaching Profile (Mentor)</h4>
+
+                            <div class="mb-3">
+                                <label for="id_mentor_expertise" class="form-label fw-bold">Areas of Expertise</label>
+                                {{ form.mentor_expertise }}
+                                <div class="form-text">What topics can you help with?</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_mentor_availability" class="form-label fw-bold">Typical
+                                    Availability</label>
+                                {{ form.mentor_availability }}
+                                <div class="form-text">e.g., Weekdays 6-8 PM, Weekends</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_mentor_bio" class="form-label fw-bold">Bio / Introduction</label>
+                                {{ form.mentor_bio }}
+                                <div class="form-text">Tell others about your experience and background</div>
+                            </div>
+
+                            <div class="card border-0 bg-light p-4 rounded-4 mt-4">
+                                <h5 class="fw-bold text-dark mb-3"><i class="fas fa-money-bill-wave text-success me-2"></i>Payment Details</h5>
+                                <p class="text-muted small mb-4">Provide these details so mentees can pay you for sessions.</p>
+                                
+                                <div class="mb-3">
+                                    <label for="id_payment_method" class="form-label fw-bold">Payment Method</label>
+                                    {{ form.payment_method }}
+                                    <div class="form-text">e.g. Bank Deposit, EasyPaisa, JazzCash</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="id_account_title" class="form-label fw-bold">Account Title</label>
+                                    {{ form.account_title }}
+                                    <div class="form-text">The name on your bank account</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="id_account_number_or_iban" class="form-label fw-bold">Account Number / IBAN</label>
+                                    {{ form.account_number_or_iban }}
+                                </div>
+                                <div class="mb-0">
+                                    <label for="id_personal_meeting_link" class="form-label fw-bold text-primary"><i class="fas fa-link me-2"></i>Personal Meeting Link (Stable Fallback)</label>
+                                    {{ form.personal_meeting_link }}
+                                    <div class="form-text small">Paste a permanent link here (Zoom, Google Meet, etc.) to use it for all your sessions.</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Buttons -->
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill fw-bold shadow-sm">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="/profile/" class="btn btn-outline-secondary px-5 py-2 rounded-pill fw-bold">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Integrations Card (Moved outside main form to avoid nested form issues) -->
+            <div class="card border-0 shadow-lg mt-4" style="border-radius: 20px;">
+                <div class="card-body p-4 p-md-5">
+                    <h4 class="border-bottom pb-2 mb-4 text-info"><i class="fas fa-plug me-2"></i>Integrations</h4>
+                    <div class="card border-0 bg-light p-4 rounded-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg" alt="Google Calendar" style="width: 25px;">
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Google Calendar</h6>
+                                    <p class="text-muted small mb-0">Required for automatic Google Meet links</p>
+                                </div>
+                            </div>
+                            
+                            {% if user.social_auth.all %}
+                                <div class="text-end">
+                                    <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill mb-2 d-block">
+                                        <i class="fas fa-check-circle me-1"></i>Connected
+                                    </span>
+                                    <form action="{% url 'social:disconnect' 'google-oauth2' %}" method="POST" id="disconnectForm">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                            Disconnect
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <form action="{% url 'social:begin' 'google-oauth2' %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" class="btn btn-outline-primary rounded-pill px-4 fw-bold">
+                                        Connect Google
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        {% if user.social_auth.all %}
+                        <div class="alert alert-info mt-3 mb-0 small py-2 px-3 rounded-3 border-0">
+                            <i class="fas fa-info-circle me-2"></i><strong>Pro Tip:</strong> If your meetings are failing, try disconnecting and reconnecting to refresh permissions.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        border-color: #667eea;
+    }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+</style>
+{% endblock %}

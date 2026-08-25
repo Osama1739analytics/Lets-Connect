@@ -1,0 +1,26 @@
+<form method="GET" class="row g-3 align-items-end mb-4">
+    {% if section %}<input type="hidden" name="section" value="{{ section }}">{% endif %}
+    {% if tab %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
+    {% if session_q %}<input type="hidden" name="session_q" value="{{ session_q }}">{% endif %}
+    {% if session_type %}<input type="hidden" name="session_type" value="{{ session_type }}">{% endif %}
+    <div class="col-md-6">
+        <label for="people_q" class="form-label fw-bold small text-secondary">Search by name</label>
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+                <i class="fas fa-search text-muted"></i>
+            </span>
+            <input type="text" id="people_q" name="people_q" value="{{ people_q }}" class="form-control border-start-0 rounded-end-pill py-2" placeholder="Search by name or username...">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label for="people_type" class="form-label fw-bold small text-secondary">Filter by role</label>
+        <select id="people_type" name="people_type" class="form-select rounded-pill py-2">
+            <option value="">All roles</option>
+            <option value="mentor" {% if people_type == 'mentor' %}selected{% endif %}>Mentors</option>
+            <option value="mentee" {% if people_type == 'mentee' %}selected{% endif %}>Mentees</option>
+        </select>
+    </div>
+    <div class="col-md-2 d-grid">
+        <button type="submit" class="btn btn-primary rounded-pill fw-bold py-2">Search</button>
+    </div>
+</form>

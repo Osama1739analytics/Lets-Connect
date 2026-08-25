@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Submit Support Ticket - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home:support_home' %}" class="text-decoration-none">Support Center</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">New Ticket</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white mt-3">
+                <div class="card-header bg-danger text-white p-4 border-0">
+                    <h4 class="fw-bold mb-1"><i class="fas fa-ticket-alt me-2"></i>Submit Support Ticket</h4>
+                    <p class="mb-0 small text-white-50">Tell us what issue or question you have. We'll get back to you shortly.</p>
+                </div>
+                <div class="card-body p-5">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Subject / Main Issue <span class="text-danger">*</span></label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                            <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Priority Level</label>
+                            {{ form.priority }}
+                            {% if form.priority.errors %}
+                            <div class="text-danger small mt-1">{{ form.priority.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Describe Your Issue <span class="text-danger">*</span></label>
+                            {{ form.message }}
+                            {% if form.message.errors %}
+                            <div class="text-danger small mt-1">{{ form.message.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Attach Proof / Screenshot (Optional)</label>
+                            {{ form.attachment }}
+                            {% if form.attachment.errors %}
+                            <div class="text-danger small mt-1">{{ form.attachment.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted d-block mt-1">You can upload images, PDFs, or other relevant files.</small>
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-end mt-5">
+                            <a href="{% url 'home:support_home' %}" class="btn btn-light rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-danger text-white rounded-pill px-5 fw-bold shadow-sm">Submit Ticket</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

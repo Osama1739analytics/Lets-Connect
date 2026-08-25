@@ -1,0 +1,939 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages - P2P Guidance{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --chat-primary: var(--primary);
+        --chat-bg: var(--bg-card);
+        --chat-surface: var(--bg-elevated);
+        --chat-sidebar-bg: var(--bg-soft);
+        --chat-border: var(--border-color);
+        --chat-text: var(--text-main);
+        --chat-muted: var(--text-muted);
+        --msg-sent: var(--primary);
+        --msg-received: rgba(var(--primary-rgb), 0.11);
+        --text-sent: #ffffff;
+        --text-received: var(--text-main);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    [data-theme="dark"] {
+        --chat-sidebar-bg: rgba(15, 23, 42, 0.95);
+        --chat-surface: rgba(17, 28, 49, 0.95);
+        --chat-border: rgba(148, 163, 184, 0.26);
+        --msg-received: rgba(148, 163, 184, 0.2);
+    }
+
+    main { padding: 0 !important; }
+    .chat-wrapper {
+        display: flex;
+        height: calc(100vh - 140px);
+        min-height: 620px;
+        background: var(--chat-bg);
+        border: 1px solid var(--chat-border);
+        border-radius: 24px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* Sidebar */
+    .chat-sidebar {
+        width: 350px;
+        border-right: 1px solid var(--chat-border);
+        display: flex;
+        flex-direction: column;
+        background: var(--chat-sidebar-bg);
+        transition: var(--transition);
+        z-index: 100;
+    }
+
+    .sidebar-header {
+        padding: 24px;
+        border-bottom: 1px solid var(--chat-border);
+        background: var(--chat-surface);
+    }
+
+    .chat-search {
+        position: relative;
+    }
+
+    .chat-search i {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        color: var(--chat-muted);
+        font-size: 0.82rem;
+    }
+
+    .chat-search input {
+        width: 100%;
+        border: 1px solid var(--chat-border);
+        background: var(--chat-bg);
+        color: var(--chat-text);
+        border-radius: 12px;
+        padding: 9px 12px 9px 34px;
+        font-size: 0.9rem;
+    }
+
+    .chat-search input:focus {
+        outline: none;
+        border-color: var(--chat-primary);
+        box-shadow: 0 0 0 0.18rem rgba(var(--primary-rgb), 0.18);
+    }
+
+    .thread-list {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .thread-item {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        text-decoration: none !important;
+        color: var(--chat-text);
+        transition: background 0.2s;
+        border-bottom: 1px solid var(--chat-border);
+    }
+
+    .thread-item:hover { background: rgba(var(--primary-rgb), 0.08); }
+    .thread-item.active { background: rgba(var(--primary-rgb), 0.14); border-right: 4px solid var(--chat-primary); }
+
+    .thread-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--chat-primary), #8b5cf6);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-right: 15px;
+        flex-shrink: 0;
+        box-shadow: 0 10px 18px -12px rgba(37, 99, 235, 0.8);
+    }
+
+    .thread-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .thread-name {
+        font-weight: 700;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 1rem;
+    }
+
+    .thread-last-msg {
+        font-size: 0.85rem;
+        color: var(--chat-muted);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Main Chat */
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: var(--chat-surface);
+        transition: var(--transition);
+    }
+
+    .chat-header {
+        padding: 15px 25px;
+        border-bottom: 1px solid var(--chat-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--chat-surface);
+        box-shadow: 0 8px 18px -20px rgba(15, 23, 42, 0.6);
+    }
+
+    .header-user {
+        display: flex;
+        align-items: center;
+    }
+
+    .back-btn {
+        display: none;
+        margin-right: 15px;
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        color: var(--chat-primary);
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 25px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        background: linear-gradient(180deg, rgba(var(--primary-rgb), 0.03) 0%, transparent 55%);
+    }
+
+    .msg-row {
+        display: flex;
+        flex-direction: column;
+        max-width: 75%;
+        position: relative;
+        animation: msgIn 0.3s ease;
+    }
+
+    @keyframes msgIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-row.sent { align-self: flex-end; }
+    .msg-row.received { align-self: flex-start; }
+
+    .msg-bubble {
+        padding: 12px 18px;
+        border-radius: 20px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        position: relative;
+        border: 1px solid var(--chat-border);
+        box-shadow: 0 8px 18px -16px rgba(15, 23, 42, 0.8);
+    }
+
+    .sent .msg-bubble {
+        background: var(--msg-sent);
+        color: var(--text-sent);
+        border-bottom-right-radius: 4px;
+        border-color: transparent;
+    }
+
+    .received .msg-bubble {
+        background: var(--msg-received);
+        color: var(--text-received);
+        border-bottom-left-radius: 4px;
+    }
+
+    .msg-time {
+        font-size: 0.75rem;
+        margin-top: 6px;
+        color: var(--chat-muted);
+    }
+
+    .sent .msg-time { text-align: right; }
+
+    .msg-actions {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        display: none;
+        gap: 8px;
+        z-index: 5;
+    }
+
+    .sent .msg-actions { right: 100%; padding-right: 12px; }
+    .received .msg-actions { left: 100%; padding-left: 12px; }
+
+    .msg-row:hover .msg-actions { display: flex; }
+
+    .msg-action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--chat-border);
+        background: var(--chat-surface);
+        color: var(--chat-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.9rem;
+        box-shadow: 0 12px 18px -16px rgba(15, 23, 42, 0.8);
+        transition: all 0.2s;
+    }
+    .msg-action-btn:hover {
+        background: var(--chat-primary); 
+        color: #fff; 
+        border-color: transparent;
+        transform: scale(1.08);
+    }
+
+    .msg-action-btn.delete-btn:hover {
+        background: #ef4444;
+    }
+
+    .chat-input-area {
+        padding: 25px;
+        border-top: 1px solid var(--chat-border);
+        background: var(--chat-surface);
+    }
+
+    .input-form {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: var(--chat-bg);
+        padding: 10px 20px;
+        border-radius: 30px;
+        transition: var(--transition);
+        border: 1px solid var(--chat-border);
+    }
+
+    .input-form:focus-within {
+        background: var(--chat-surface);
+        border-color: var(--chat-primary);
+        box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.14);
+    }
+
+    .chat-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        padding: 5px;
+        font-size: 1rem;
+        color: var(--chat-text);
+    }
+
+    .chat-input::placeholder {
+        color: var(--chat-muted);
+    }
+
+    .send-btn {
+        background: var(--chat-primary);
+        border: none;
+        color: #fff;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .send-btn:hover {
+        transform: rotate(15deg) scale(1.1);
+        box-shadow: 0 10px 18px -10px rgba(79, 70, 229, 0.85);
+    }
+
+    .editing-banner {
+        background: rgba(var(--primary-rgb), 0.1);
+        padding: 10px 25px;
+        font-size: 0.9rem;
+        display: none;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--chat-border);
+        color: var(--chat-primary);
+        font-weight: 600;
+    }
+
+    .empty-state-panel {
+        background: radial-gradient(circle at 15% 20%, rgba(var(--primary-rgb), 0.1), transparent 45%), var(--chat-surface);
+    }
+
+    .inbox-feature-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        border: 1px solid var(--chat-border);
+        background: var(--chat-bg);
+        color: var(--chat-muted);
+        border-radius: 999px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    @media (max-width: 768px) {
+        .chat-wrapper {
+            height: calc(100vh - 120px);
+            min-height: 0;
+            border-radius: 16px;
+        }
+        .chat-sidebar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            transform: translateX(0);
+        }
+
+        .chat-wrapper.chat-open .chat-sidebar {
+            transform: translateX(-100%);
+        }
+
+        .chat-main {
+            width: 100%;
+            position: absolute;
+            right: -100%;
+            top: 0;
+            bottom: 0;
+        }
+
+        .chat-wrapper.chat-open .chat-main {
+            right: 0;
+        }
+
+        .back-btn {
+            display: inline-block;
+        }
+    }
+
+    .confirm-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(5px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .confirm-card {
+        background: var(--chat-surface);
+        border: 1px solid var(--chat-border);
+        padding: 30px;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        transform: translateY(20px);
+        transition: var(--transition);
+    }
+
+    .confirm-overlay.show { display: flex; }
+    .confirm-overlay.show .confirm-card { transform: translateY(0); }
+
+    .confirm-btn-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 25px;
+    }
+</style>
+
+<div class="chat-wrapper {% if active_user %}chat-open{% endif %}" id="chat-wrapper">
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+        <div class="sidebar-header">
+            <h4 class="fw-bold mb-1">Messages</h4>
+            <p class="mb-0 text-muted small">{{ threads|length }} conversation{{ threads|length|pluralize }}</p>
+            <div class="chat-search mt-3">
+                <i class="fas fa-search"></i>
+                <input type="text" id="thread-search" placeholder="Search conversations">
+            </div>
+        </div>
+        <div class="thread-list" id="sidebar-thread-list">
+            {% for thread in threads %}
+            <a href="{% url 'home:chat_room' thread.other_user.id %}" class="thread-item {% if active_user and active_user.id == thread.other_user.id %}active{% endif %}" data-user-id="{{ thread.other_user.id }}">
+                <div class="thread-avatar">
+                    {{ thread.other_user.full_name|default:thread.other_user.username|first|upper }}
+                </div>
+                <div class="thread-content" style="flex: 1; min-width: 0;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <p class="thread-name text-truncate mb-0" style="max-width: 80%;">{{ thread.other_user.full_name|default:thread.other_user.username }}</p>
+                        {% if thread.unread_count > 0 %}
+                        <span class="badge bg-danger rounded-pill unread-badge">{{ thread.unread_count }}</span>
+                        {% else %}
+                        <span class="badge bg-danger rounded-pill unread-badge" style="display: none;">0</span>
+                        {% endif %}
+                    </div>
+                    <p class="thread-last-msg text-truncate mb-0">
+                        {% if thread.last_message %}
+                            {% if thread.last_message.sender == request.user %}You: {% endif %}{{ thread.last_message.content|truncatechars:30 }}
+                        {% else %}
+                            New Connection
+                        {% endif %}
+                    </p>
+                </div>
+            </a>
+            {% empty %}
+            <div class="p-5 text-center text-muted" id="no-chats-placeholder">
+                <i class="fas fa-comment-slash fa-3x mb-3 opacity-25"></i>
+                <p>No active conversations yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="chat-main">
+        {% if active_user %}
+        <div class="chat-header">
+            <div class="header-user">
+                <button class="back-btn" onclick="toggleSidebar()"><i class="fas fa-chevron-left"></i></button>
+                <div class="thread-avatar" style="width: 44px; height: 44px; font-size: 1rem; margin-right: 15px;">
+                    {{ active_user.full_name|default:active_user.username|first|upper }}
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">{{ active_user.full_name|default:active_user.username }}</h6>
+                    <small class="text-success fw-bold" style="font-size: 0.75rem;"><i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i>Online</small>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="dropdown">
+                    <button class="btn btn-light rounded-circle shadow-sm" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="border-radius: 12px;">
+                        <li><a class="dropdown-item rounded-3" href="{% url 'home:public_profile' active_user.username %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <button class="dropdown-item rounded-3 text-danger fw-bold" onclick="showConfirmDelete()">
+                                <i class="fas fa-trash-alt me-2"></i>Delete Chat
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            {% for msg in chat_messages %}
+            <div class="msg-row {% if msg.sender == request.user %}sent{% else %}received{% endif %}" id="msg-{{ msg.id }}" data-msg-id="{{ msg.id }}">
+                <div class="msg-bubble">
+                    <span class="content">{{ msg.content }}</span>
+                </div>
+                <span class="msg-time">{{ msg.timestamp|date:"h:i A" }}</span>
+                
+                {% if msg.sender == request.user %}
+                <div class="msg-actions">
+                    <button class="msg-action-btn" onclick="initEdit('{{ msg.id }}')" title="Edit"><i class="fas fa-pen"></i></button>
+                    <button class="msg-action-btn delete-btn" onclick="deleteMessage('{{ msg.id }}')" title="Delete"><i class="fas fa-trash"></i></button>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state" id="no-msg">
+                <i class="fas fa-handshake fa-3x mb-3 text-primary opacity-25"></i>
+                <p class="fw-bold">Start the conversation with {{ active_user.full_name|default:active_user.username }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="editing-banner" id="edit-banner">
+            <span><i class="fas fa-pen me-2"></i>Editing Mode</span>
+            <button class="btn btn-sm text-dark p-0" onclick="cancelEdit()"><i class="fas fa-times fs-5"></i></button>
+        </div>
+
+        <div class="chat-input-area">
+            <form id="chat-form" class="input-form">
+                {% csrf_token %}
+                <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." autocomplete="off" required>
+                <button type="submit" class="send-btn" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+            </form>
+        </div>
+        {% else %}
+        <div class="empty-state-panel d-flex flex-column align-items-center justify-content-center h-100 text-center p-5">
+            <div class="empty-state-icon mb-4">
+                <i class="fas fa-comments text-primary fa-5x opacity-25"></i>
+            </div>
+            <h3 class="fw-bold text-dark">Your Inbox</h3>
+            <p class="text-muted mx-auto mb-4" style="max-width: 350px;">
+                Select a conversation from the sidebar to start chatting, or explore profiles to find new connections.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                <span class="inbox-feature-badge"><i class="fas fa-bolt"></i> Real-time updates</span>
+                <span class="inbox-feature-badge"><i class="fas fa-user-friends"></i> Grow your network</span>
+                <span class="inbox-feature-badge"><i class="fas fa-shield-alt"></i> Private chats</span>
+            </div>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <a href="{% url 'home:browse_sessions' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                    <i class="fas fa-search me-2"></i>Discover People
+                </a>
+                <a href="{% url 'home:manage_connect_requests' %}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+                    <i class="fas fa-network-wired me-2"></i>My Connects
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+{% if active_user %}
+{{ active_user.id|json_script:"recipient-id" }}
+{{ active_user.full_name|default:active_user.username|json_script:"recipient-name" }}
+{{ request.user.id|json_script:"current-user-id" }}
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('chat-wrapper').classList.toggle('chat-open');
+    }
+
+    function showConfirmDelete() {
+        document.getElementById('confirm-overlay').classList.add('show');
+    }
+
+    function hideConfirmDelete() {
+        document.getElementById('confirm-overlay').classList.remove('show');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const recipientId = JSON.parse(document.getElementById('recipient-id').textContent);
+        const recipientName = JSON.parse(document.getElementById('recipient-name').textContent);
+        const currentUserId = JSON.parse(document.getElementById('current-user-id').textContent);
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const editBanner = document.getElementById('edit-banner');
+        
+        let editingMessageId = null;
+        let lastMessageId = 0;
+        
+        const msgRows = document.querySelectorAll('.msg-row');
+        if(msgRows.length > 0) {
+            lastMessageId = Math.max(...Array.from(msgRows).map(r => parseInt(r.dataset.msgId)));
+        }
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // --- EDIT LOGIC ---
+        window.initEdit = function(id) {
+            const row = document.getElementById(`msg-${id}`);
+            const text = row.querySelector('.content').textContent;
+            chatInput.value = text;
+            editingMessageId = id;
+            editBanner.style.display = 'flex';
+            sendBtn.innerHTML = '<i class="fas fa-check"></i>';
+            chatInput.focus();
+        };
+
+        window.cancelEdit = function() {
+            editingMessageId = null;
+            chatInput.value = '';
+            editBanner.style.display = 'none';
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        };
+
+        let messageToDeleteId = null;
+        window.deleteMessage = function(id) {
+            messageToDeleteId = id;
+            const modal = new bootstrap.Modal(document.getElementById('deleteMsgModal'));
+            modal.show();
+        };
+
+        window.confirmDeleteMsg = function() {
+            if(!messageToDeleteId) return;
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            fetch(`/chat/message/delete/${messageToDeleteId}/`, {
+                method: 'POST',
+                body: formData
+            }).then(() => {
+                const row = document.getElementById(`msg-${messageToDeleteId}`);
+                if(row) row.remove();
+                bootstrap.Modal.getInstance(document.getElementById('deleteMsgModal')).hide();
+                messageToDeleteId = null;
+            });
+        };
+
+        // --- SUBMIT LOGIC ---
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const content = chatInput.value.trim();
+            if (!content) return;
+
+            if (editingMessageId) {
+                // First, update via POST for persistence
+                const formData = new FormData();
+                formData.append('content', content);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                
+                fetch(`/chat/message/edit/${editingMessageId}/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                }).then(() => {
+                    // Then broadcast via WebSocket for real-time
+                    if (socketConnected && chatSocket.readyState === WebSocket.OPEN) {
+                        chatSocket.send(JSON.stringify({ 
+                            'action': 'edit',
+                            'message_id': editingMessageId,
+                            'message': content 
+                        }));
+                    }
+                    // Local update is handled by the WebSocket receiver too, but we can do it here for speed
+                    const row = document.getElementById(`msg-${editingMessageId}`);
+                    if(row) row.querySelector('.content').textContent = content;
+                    cancelEdit();
+                });
+            } else {
+                if (socketConnected && chatSocket.readyState === WebSocket.OPEN) {
+                    chatSocket.send(JSON.stringify({ 'message': content }));
+                } else {
+                    fetch('/chat/send-ajax/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            recipient_id: recipientId,
+                            content: content
+                        })
+                    }).then(res => res.json()).then(data => {
+                        appendMessage({
+                            type: 'chat',
+                            id: data.id,
+                            message: data.message,
+                            sender_id: data.sender_id,
+                            timestamp: data.timestamp
+                        });
+                    });
+                }
+                chatInput.value = '';
+            }
+        });
+
+        // --- REAL TIME LOGIC ---
+        let socketConnected = false;
+        const wsStart = window.location.protocol === "https:" ? "wss://" : "ws://";
+        const endpoint = wsStart + window.location.host + '/ws/chat/' + recipientId + '/';
+        let chatSocket;
+
+        function connectSocket() {
+            chatSocket = new WebSocket(endpoint);
+            chatSocket.onopen = () => { socketConnected = true; };
+            chatSocket.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                if (data.type === 'edit') {
+                    const row = document.getElementById(`msg-${data.id}`);
+                    if (row) {
+                        row.querySelector('.content').textContent = data.message;
+                        // Visual cue for edit
+                        row.querySelector('.msg-bubble').style.backgroundColor = '#f0f7ff';
+                        setTimeout(() => {
+                            row.querySelector('.msg-bubble').style.backgroundColor = '';
+                        }, 1000);
+                    }
+                } else {
+                    appendMessage(data);
+                }
+            };
+            chatSocket.onclose = () => { socketConnected = false; setTimeout(connectSocket, 3000); };
+        }
+        connectSocket();
+
+        function appendMessage(data) {
+            const noMsg = document.getElementById('no-msg');
+            if(noMsg) noMsg.style.display = 'none';
+            
+            const existing = document.querySelector(`.msg-row[data-msg-id="${data.id}"]`);
+            if(existing) return;
+
+            const isSent = (data.sender_id === currentUserId);
+            const row = document.createElement('div');
+            row.classList.add('msg-row');
+            row.classList.add(isSent ? 'sent' : 'received');
+            row.dataset.msgId = data.id;
+            row.id = `msg-${data.id}`;
+            
+            row.innerHTML = `
+                <div class="msg-bubble">
+                    <span class="content">${data.message}</span>
+                </div>
+                <span class="msg-time">${data.timestamp}</span>
+                ${isSent ? `
+                <div class="msg-actions">
+                    <button class="msg-action-btn" onclick="initEdit('${data.id}')"><i class="fas fa-pen"></i></button>
+                    <button class="msg-action-btn delete-btn" onclick="deleteMessage('${data.id}')"><i class="fas fa-trash"></i></button>
+                </div>` : ''}
+            `;
+            
+            chatMessages.appendChild(row);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            if(data.id > lastMessageId) lastMessageId = data.id;
+
+            // Update Sidebar
+            updateSidebar(data, isSent);
+        }
+
+        function updateSidebar(data, isSent) {
+            const sidebarList = document.getElementById('sidebar-thread-list');
+            const placeholder = document.getElementById('no-chats-placeholder');
+            if(placeholder) placeholder.remove();
+
+            let threadItem = document.querySelector(`.thread-item[data-user-id="${isSent ? recipientId : data.sender_id}"]`);
+            
+            if(!threadItem) {
+                // Fresh chat: Create new item
+                threadItem = document.createElement('a');
+                threadItem.href = `/chat/${isSent ? recipientId : data.sender_id}/`;
+                threadItem.classList.add('thread-item');
+                if(isSent) threadItem.classList.add('active');
+                threadItem.dataset.userId = isSent ? recipientId : data.sender_id;
+                
+                const name = isSent ? recipientName : "New Contact";
+                
+                threadItem.innerHTML = `
+                    <div class="thread-avatar">${name[0].toUpperCase()}</div>
+                    <div class="thread-content">
+                        <p class="thread-name">${name}</p>
+                        <p class="thread-last-msg">${isSent ? 'You: ' : ''}${data.message.substring(0, 30)}...</p>
+                    </div>
+                `;
+                sidebarList.prepend(threadItem);
+            } else {
+                // Update existing item
+                const lastMsg = threadItem.querySelector('.thread-last-msg');
+                lastMsg.textContent = (isSent ? 'You: ' : '') + data.message.substring(0, 30) + (data.message.length > 30 ? '...' : '');
+                sidebarList.prepend(threadItem); // Move to top
+            }
+        }
+
+        // --- POLLING FALLBACK ---
+        setInterval(() => {
+            if (!socketConnected) {
+                fetch(`/chat/fetch-ajax/${recipientId}/?last_id=${lastMessageId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        data.messages.forEach(m => {
+                            appendMessage({
+                                id: m.id,
+                                message: m.content,
+                                sender_id: m.sender_id,
+                                timestamp: m.timestamp
+                            });
+                        });
+                    });
+            }
+        }, 2500);
+    });
+</script>
+{% endif %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const threadSearch = document.getElementById('thread-search');
+        if (!threadSearch) return;
+
+        threadSearch.addEventListener('input', function(event) {
+            const query = event.target.value.trim().toLowerCase();
+            const threadItems = document.querySelectorAll('#sidebar-thread-list .thread-item');
+
+            threadItems.forEach((item) => {
+                const name = item.querySelector('.thread-name')?.textContent.toLowerCase() || '';
+                const preview = item.querySelector('.thread-last-msg')?.textContent.toLowerCase() || '';
+                const isMatch = !query || name.includes(query) || preview.includes(query);
+                item.style.display = isMatch ? 'flex' : 'none';
+            });
+        });
+        
+        window.updateSidebarFromNotification = function(data) {
+            const senderId = data.sender_id;
+            if (!senderId) return;
+
+            let msgText = "New message";
+            if (data.verb.startsWith("sent you a message: ")) {
+                msgText = data.verb.replace("sent you a message: ", "");
+            }
+
+            const sidebarList = document.getElementById('sidebar-thread-list');
+            if (!sidebarList) return;
+            
+            const placeholder = document.getElementById('no-chats-placeholder');
+            if (placeholder) placeholder.remove();
+
+            let threadItem = document.querySelector(`.thread-item[data-user-id="${senderId}"]`);
+            
+            if (!threadItem) {
+                threadItem = document.createElement('a');
+                threadItem.href = `/chat/${senderId}/`;
+                threadItem.classList.add('thread-item');
+                threadItem.dataset.userId = senderId;
+                
+                const name = data.sender;
+                
+                threadItem.innerHTML = `
+                    <div class="thread-avatar">${name[0].toUpperCase()}</div>
+                    <div class="thread-content" style="flex: 1; min-width: 0;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <p class="thread-name text-truncate mb-0" style="max-width: 80%;">${name}</p>
+                            <span class="badge bg-danger rounded-pill unread-badge">1</span>
+                        </div>
+                        <p class="thread-last-msg text-truncate mb-0">${msgText}</p>
+                    </div>
+                `;
+                sidebarList.prepend(threadItem);
+            } else {
+                const lastMsg = threadItem.querySelector('.thread-last-msg');
+                if (lastMsg) lastMsg.textContent = msgText;
+                
+                if (!threadItem.classList.contains('active')) {
+                    const badge = threadItem.querySelector('.unread-badge');
+                    if (badge) {
+                        let count = parseInt(badge.textContent) || 0;
+                        badge.textContent = count + 1;
+                        badge.style.display = 'inline-block';
+                    }
+                }
+                sidebarList.prepend(threadItem);
+            }
+        };
+    });
+</script>
+{% endblock %}
+
+{% block modals %}
+{% if active_user %}
+<!-- Custom Confirm UI -->
+<div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-card">
+        <div class="mb-4">
+            <i class="fas fa-exclamation-circle text-danger mb-3" style="font-size: 3.5rem;"></i>
+            <h4 class="fw-bold">Are you sure?</h4>
+            <p class="text-muted">Do you really want to delete all messages? This action cannot be undone.</p>
+        </div>
+        <div class="confirm-btn-group">
+            <button class="btn btn-light rounded-pill px-4 fw-bold" onclick="hideConfirmDelete()">Cancel</button>
+            <form id="delete-thread-form" action="{% url 'home:delete_chat_thread' active_user.id %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Yes, Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+<!-- Delete Message Confirmation Modal -->
+<div class="modal fade" id="deleteMsgModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body p-4 text-center">
+                <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Delete Message?</h4>
+                <p class="text-muted mb-4">Are you sure you want to delete this message? This action cannot be undone.</p>
+                <div class="d-grid gap-2">
+                    <button type="button" onclick="confirmDeleteMsg()" class="btn btn-danger btn-lg rounded-pill fw-bold shadow-sm">
+                        Yes, Delete
+                    </button>
+                    <button type="button" class="btn btn-light btn-lg rounded-pill fw-bold text-muted" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

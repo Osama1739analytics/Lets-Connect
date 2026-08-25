@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Welcome - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="row min-vh-75 align-items-center py-5">
+    <div class="col-lg-6 text-center text-lg-start mb-5 mb-lg-0">
+        <div class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-bold mb-3 animate__animated animate__fadeInDown">
+            🚀 The Future of Mentorship
+        </div>
+        
+        {% if user.is_authenticated %}
+        <h1 class="display-3 fw-bold text-dark mb-4 animate__animated animate__fadeInUp">
+            Welcome back, <br>
+            <span class="text-primary text-gradient">{{ user.full_name|default:user.username }}!</span>
+        </h1>
+        <p class="lead text-secondary mb-5 animate__animated animate__fadeInUp animate__delay-1s">
+            {% if user.user_type == 'mentee' %}
+            Your path to professional growth continues. Discover top-rated mentors and book your next session today.
+            {% else %}
+            Empower the next generation of professionals. Share your expertise and host impactful sessions.
+            {% endif %}
+        </p>
+        
+        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start animate__animated animate__fadeInUp animate__delay-1s">
+            {% if user.user_type == 'mentee' %}
+            <a href="{% url 'home:browse_sessions' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg hover-up">
+                Find a Mentor <i class="fas fa-search ms-2"></i>
+            </a>
+            <a href="{% url 'home:create_session' %}" class="btn btn-outline-primary btn-lg rounded-pill px-5 hover-up">
+                Request Session
+            </a>
+            {% else %}
+            <a href="{% url 'home:create_session' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg hover-up">
+                Post New Session <i class="fas fa-plus ms-2"></i>
+            </a>
+            <a href="{% url 'home:browse_sessions' %}" class="btn btn-outline-primary btn-lg rounded-pill px-5 hover-up">
+                View Requests
+            </a>
+            {% endif %}
+        </div>
+        
+        {% else %}
+        <h1 class="display-3 fw-bold text-dark mb-4 animate__animated animate__fadeInUp">
+            Unlock Your <br>
+            <span class="text-primary text-gradient">Professional Potential</span>
+        </h1>
+        <p class="lead text-secondary mb-5 animate__animated animate__fadeInUp animate__delay-1s">
+            The ultimate platform for peer-to-peer guidance. Mentorship, skill-building, and community—all in one place.
+        </p>
+        
+        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start animate__animated animate__fadeInUp animate__delay-1s">
+            <a href="{% url 'home:signup' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg hover-up">
+                Get Started <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+            <a href="{% url 'home:login' %}" class="btn btn-light btn-lg rounded-pill px-5 shadow-sm hover-up border-0">
+                Sign In
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-6 position-relative animate__animated animate__fadeInRight">
+        <!-- Floating Illustration or Card Stack -->
+        <div class="hero-image-stack">
+            <div class="hero-card main-card shadow-lg rounded-4 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="img-fluid" alt="Collaboration">
+                <div class="card-overlay p-4 text-white">
+                    <h5 class="fw-bold mb-0">Live Collaborative Sessions</h5>
+                </div>
+            </div>
+            <div class="hero-card hero-floating-card floating-card-1 shadow-lg rounded-4 p-3 d-none d-md-flex">
+                <div class="icon-box bg-success text-white me-3 flex-shrink-0">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="hero-floating-copy">
+                    <h6 class="fw-bold mb-0 hero-floating-title">Verified Mentors</h6>
+                    <small class="hero-floating-subtitle">Expert guidance only</small>
+                </div>
+            </div>
+            <div class="hero-card hero-floating-card floating-card-2 shadow-lg rounded-4 p-3 d-none d-md-flex">
+                <div class="icon-box bg-warning text-white me-3 flex-shrink-0">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="hero-floating-copy">
+                    <h6 class="fw-bold mb-0 hero-floating-title">4.9/5 Rating</h6>
+                    <small class="hero-floating-subtitle">Top quality support</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated and user_sessions %}
+<!-- Booked Sessions Dashboard -->
+<div class="row py-5 mt-4">
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold text-dark mb-1"><i class="fas fa-calendar-alt text-primary me-2"></i>Your Mentoring Schedule</h2>
+                <p class="text-secondary mb-0">Track bookings, join active Daily.co meetings, or reschedule as needed.</p>
+            </div>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 fw-bold">{{ user_sessions|length }} Sessions</span>
+        </div>
+
+        <div class="row g-4">
+            {% for session in user_sessions %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative hover-up transition-all" 
+                     style="border-left: 5px solid {% if session.payment_status == 'verified' %}#198754{% elif session.payment_status == 'submitted' %}#ffc107{% else %}#dc3545{% endif %} !important;">
+                    
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge rounded-pill px-3 py-1 fw-bold {% if session.status == 'completed' %}bg-secondary{% elif session.payment_status == 'verified' %}bg-success{% elif session.payment_status == 'submitted' %}status-badge-submitted{% else %}status-badge-unpaid{% endif %}" style="font-size: 0.75rem;">
+                                {% if session.status == 'completed' %}
+                                    Completed
+                                {% elif session.payment_status == 'verified' %}
+                                    Ready to Join
+                                {% elif session.payment_status == 'submitted' %}
+                                    Awaiting Verification
+                                {% else %}
+                                    Awaiting Payment
+                                {% endif %}
+                            </span>
+                            
+                            {% if session.is_started_early %}
+                            <span class="badge bg-info text-white rounded-pill px-2 py-1 fw-bold" style="font-size: 0.7rem;"><i class="fas fa-history me-1"></i>Taken Early</span>
+                            {% endif %}
+                        </div>
+ 
+                        <h5 class="fw-bold text-dark mb-2">{{ session.subject_detail }}</h5>
+                        <p class="text-muted small line-clamp-2 mb-3">{{ session.description|default:"No description provided." }}</p>
+ 
+                        <!-- Calendar details bar -->
+                        <div class="p-3 bg-light rounded-3 mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="far fa-calendar-alt text-primary me-2"></i>
+                                <span class="small fw-bold text-dark">{{ session.scheduled_at|date:"l, F d, Y" }}</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="far fa-clock text-primary me-2"></i>
+                                <span class="small text-muted">{{ session.scheduled_at|time:"h:i A" }} ({{ session.get_duration_minutes_display }})</span>
+                            </div>
+                        </div>
+ 
+                        <!-- Action Triggers -->
+                        <div class="d-grid gap-2">
+                            {% if session.payment_status == 'verified' and session.status != 'completed' %}
+                            <a href="{% url 'home:join_session_meeting' session.id %}" class="btn btn-success rounded-pill fw-bold py-2 shadow-sm animate__animated animate__pulse animate__infinite">
+                                <i class="fas fa-video me-2"></i>Join Meeting
+                            </a>
+                            
+                            <!-- Mentor Action: Complete Session -->
+                            {% with is_post=session.session_type|add:"" %}
+                            {% if session.session_type == 'post' and request.user == session.initiator or session.session_type != 'post' and request.user == session.participant %}
+                            <a href="{% url 'home:complete_session' session.id %}" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold mt-1">
+                                <i class="fas fa-check-circle me-1"></i>Mark Completed
+                            </a>
+                            {% endif %}
+                            {% endwith %}
+                            
+                            {% elif session.payment_status == 'submitted' and session.status != 'completed' %}
+                                <!-- Identify if user is Mentor or Mentee -->
+                                {% if session.session_type == 'post' and request.user == session.initiator or session.session_type != 'post' and request.user == session.participant %}
+                                    <!-- Mentor: Verify Payment action -->
+                                    <a href="{% url 'home:verify_payment' session.id %}" class="btn btn-warning rounded-pill fw-bold py-2 text-dark shadow-sm" style="background-color: #ffc107 !important; border: none;">
+                                        <i class="fas fa-receipt me-2"></i>Verify Payment screenshot
+                                    </a>
+                                {% else %}
+                                    <!-- Mentee: Status text -->
+                                    <button class="btn btn-light rounded-pill fw-bold py-2 text-muted border cursor-default" style="background-color: #f8fafc !important;" disabled>
+                                        <i class="fas fa-hourglass-half me-2"></i>Awaiting Teacher Approval...
+                                    </button>
+                                {% endif %}
+                                
+                            {% elif session.payment_status == 'unpaid' and session.status != 'completed' %}
+                                <!-- Identify if user is Mentor or Mentee -->
+                                {% if session.session_type == 'post' and request.user == session.participant or session.session_type != 'post' and request.user == session.initiator %}
+                                    <!-- Mentee: Make Payment action -->
+                                    <a href="{% url 'home:submit_payment' session.id %}" class="btn btn-primary rounded-pill fw-bold py-2 shadow-sm animate__animated animate__pulse animate__infinite">
+                                        <i class="fas fa-credit-card me-2"></i>Pay & Confirm Session
+                                    </a>
+                                {% else %}
+                                    <!-- Mentor: Awaiting payment text -->
+                                    <button class="btn btn-light rounded-pill fw-bold py-2 text-muted border cursor-default" style="background-color: #f8fafc !important;" disabled>
+                                        <i class="fas fa-hourglass-half me-2"></i>Awaiting Student Payment...
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+
+                            <!-- Reschedule Section -->
+                            {% if session.status != 'completed' %}
+                            <button class="btn btn-outline-primary rounded-pill btn-sm fw-bold mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#reschedule-{{ session.id }}" aria-expanded="false">
+                                <i class="fas fa-sync-alt me-1"></i>Reschedule / Shift Time
+                            </button>
+                            
+                            <div class="collapse mt-2" id="reschedule-{{ session.id }}">
+                                <div class="p-3 border rounded-3 bg-white">
+                                    <form action="{% url 'home:reschedule_session' session.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <label class="form-label small fw-bold text-dark mb-1">Select New Date & Time:</label>
+                                        <input type="datetime-local" name="new_time" class="form-control form-control-sm mb-2 rounded" required>
+                                        <button type="submit" class="btn btn-sm btn-primary w-100 rounded-pill fw-bold">
+                                            Confirm Shift
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<hr class="opacity-10 my-4">
+{% endif %}
+
+<!-- Features -->
+<div class="row g-4 py-5">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 hover-up transition-all bg-opacity-75">
+            <div class="icon-circle bg-primary-subtle text-primary mx-auto mb-3">
+                <i class="fas fa-user-graduate fs-4"></i>
+            </div>
+            <h4 class="fw-bold mb-3">Expert Mentorship</h4>
+            <p class="text-secondary small mb-0">Gain insights from experienced professionals who have been where you want to go.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 hover-up transition-all bg-opacity-75">
+            <div class="icon-circle bg-warning-subtle text-warning mx-auto mb-3">
+                <i class="fas fa-lightbulb fs-4"></i>
+            </div>
+            <h4 class="fw-bold mb-3">Skill Discovery</h4>
+            <p class="text-secondary small mb-0">Discover and master high-demand skills through targeted peer learning.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 hover-up transition-all bg-opacity-75">
+            <div class="icon-circle bg-success-subtle text-success mx-auto mb-3">
+                <i class="fas fa-shield-alt fs-4"></i>
+            </div>
+            <h4 class="fw-bold mb-3">Trusted Platform</h4>
+            <p class="text-secondary small mb-0">Secure payments and verified profiles ensure a safe learning environment.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* High-contrast status badges for light & dark mode protection */
+    .status-badge-submitted {
+        background-color: #feebc8 !important; /* Soft premium gold/orange */
+        color: #c05621 !important; /* Highly legible dark gold/brown text */
+        border: 1px solid #fbd38d !important;
+    }
+    
+    .status-badge-unpaid {
+        background-color: #fed7d7 !important; /* Soft rose red */
+        color: #c53030 !important; /* Legible deep dark red text */
+        border: 1px solid #feb2b2 !important;
+    }
+
+    .min-vh-75 { min-height: 75vh; }
+    
+    .text-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hover-up {
+        transition: all 0.3s ease;
+    }
+
+    .hover-up:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .icon-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .icon-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Hero Image Stack */
+    .hero-image-stack {
+        position: relative;
+        padding: 40px;
+    }
+
+    .main-card {
+        position: relative;
+        transform: rotate(-2deg);
+        z-index: 1;
+    }
+
+    .card-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    }
+
+    .floating-card-1 {
+        position: absolute;
+        top: -28px;
+        right: -18px;
+        z-index: 3;
+        width: 240px;
+        transform: rotate(3deg);
+    }
+
+    .floating-card-2 {
+        position: absolute;
+        bottom: 36px;
+        left: -32px;
+        z-index: 3;
+        width: 230px;
+        transform: rotate(-5deg);
+    }
+
+    .hero-floating-card {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18) !important;
+    }
+
+    .hero-floating-title {
+        color: #0f172a;
+        line-height: 1.25;
+    }
+
+    .hero-floating-subtitle {
+        display: block;
+        margin-top: 2px;
+        color: #334155;
+        font-size: 0.82rem;
+        font-weight: 600;
+        line-height: 1.35;
+        opacity: 1;
+    }
+
+    [data-bs-theme="dark"] .hero-floating-card {
+        background: rgba(17, 28, 49, 0.96);
+        border-color: rgba(148, 163, 184, 0.35);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    [data-bs-theme="dark"] .hero-floating-title {
+        color: #f1f5f9;
+    }
+
+    [data-bs-theme="dark"] .hero-floating-subtitle {
+        color: #cbd5e1;
+    }
+
+    @media (max-width: 991.98px) {
+        .hero-image-stack { padding: 20px; }
+    }
+</style>
+{% endblock %}

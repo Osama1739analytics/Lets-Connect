@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Blogs & Articles - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <!-- Header Area -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-5 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home:hub_dashboard' %}" class="text-decoration-none">Knowledge Hub</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Blogs</li>
+                </ol>
+            </nav>
+            <h1 class="fw-bold text-dark mb-1"><i class="fas fa-feather-alt text-success me-2"></i>Blogs & Articles</h1>
+            <p class="text-secondary mb-0">Learn from guides, stories, and career insights published by expert mentors.</p>
+        </div>
+        
+        <a href="{% url 'home:create_blog' %}" class="btn btn-success text-white rounded-pill px-4 shadow-sm fw-bold">
+            <i class="fas fa-pen-nib me-2"></i>Write a Blog Post
+        </a>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5 bg-white p-4">
+        <form method="GET" class="row g-3">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ query }}" class="form-control bg-light border-0" placeholder="Search blog titles or content...">
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <select name="category" class="form-select bg-light border-0">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <button type="submit" class="btn btn-success text-white w-100 rounded-pill fw-bold">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Blog Posts List -->
+    <div class="row g-4">
+        {% for blog in blogs %}
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 bg-white hover-up transition-all">
+                <div class="card-body p-4 p-lg-5 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-success-subtle text-success px-3 py-1 rounded">{{ blog.category.name|default:"General" }}</span>
+                        <span class="small text-muted"><i class="far fa-calendar-alt me-1"></i>{{ blog.created_at|date:"M d, Y" }}</span>
+                    </div>
+
+                    <h4 class="fw-bold text-dark mb-3">{{ blog.title }}</h4>
+                    <p class="text-secondary small mb-4 flex-grow-1 line-clamp-4">{{ blog.content|striptags|truncatewords:40 }}</p>
+
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary fw-bold" style="width: 36px; height: 36px; font-size: 0.85rem;">
+                                {{ blog.author.username|slice:":2"|upper }}
+                            </div>
+                            <span class="small text-secondary">By {{ blog.author.full_name|default:blog.author.username }}</span>
+                        </div>
+                        <a href="{% url 'home:blog_detail' blog.slug %}" class="btn btn-outline-success btn-sm rounded-pill px-4 fw-bold">Read Article</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-edit fa-4x text-muted mb-3"></i>
+            <h5 class="fw-bold text-dark">No articles found</h5>
+            <p class="text-secondary">Try searching for other terms or check back later.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .hover-up {
+        transition: all 0.3s ease;
+    }
+    .hover-up:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+    }
+    .line-clamp-4 {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;  
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

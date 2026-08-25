@@ -1,0 +1,25 @@
+<form method="GET" class="row g-3 align-items-end mb-4">
+    <input type="hidden" name="section" value="sessions">
+    {% if people_q %}<input type="hidden" name="people_q" value="{{ people_q }}">{% endif %}
+    {% if people_type %}<input type="hidden" name="people_type" value="{{ people_type }}">{% endif %}
+    <div class="col-md-6">
+        <label for="session_q" class="form-label fw-bold small text-secondary">Search sessions</label>
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+                <i class="fas fa-search text-muted"></i>
+            </span>
+            <input type="text" id="session_q" name="session_q" value="{{ session_q }}" class="form-control border-start-0 rounded-end-pill py-2" placeholder="Search by topic, mentor, or tags...">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label for="session_type" class="form-label fw-bold small text-secondary">Filter by type</label>
+        <select id="session_type" name="session_type" class="form-select rounded-pill py-2">
+            <option value="">All session types</option>
+            <option value="post" {% if session_type == 'post' %}selected{% endif %}>Mentor posts</option>
+            <option value="request" {% if session_type == 'request' %}selected{% endif %}>Student requests</option>
+        </select>
+    </div>
+    <div class="col-md-2 d-grid">
+        <button type="submit" class="btn btn-primary rounded-pill fw-bold py-2">Search</button>
+    </div>
+</form>

@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify Payment - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-header bg-dark py-4 text-center border-0">
+                    <h2 class="text-white mb-0 fw-bold"><i class="fas fa-check-double me-2"></i>Payment Verification</h2>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <h5 class="fw-bold mb-4 text-secondary text-uppercase small letter-spacing">Transaction Proof</h5>
+                            {% if session.payment_screenshot %}
+                            <div class="rounded-4 overflow-hidden shadow-sm border bg-light text-center p-2">
+                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#screenshotModal">
+                                    <img src="{{ session.payment_screenshot.url }}" class="img-fluid rounded-3" style="max-height: 500px;" alt="Payment Proof">
+                                </a>
+                                <div class="mt-2 text-muted small"><i class="fas fa-search-plus me-1"></i>Click image to enlarge</div>
+                            </div>
+
+
+                            {% else %}
+                            <div class="alert alert-warning">No screenshot has been uploaded for this session yet.</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 border-start ps-md-4">
+                            <h5 class="fw-bold mb-4 text-secondary text-uppercase small letter-spacing">Session Details</h5>
+                            <div class="table-responsive">
+                                <table class="table table-borderless align-middle">
+                                    <tr>
+                                        <td class="text-muted ps-0">Topic:</td>
+                                        <td class="fw-bold text-dark">{{ session.subject_detail }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted ps-0">Mentee:</td>
+                                        <td class="fw-bold">{{ session.participant.username }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted ps-0">Duration:</td>
+                                        <td class="fw-bold">{{ session.get_duration_minutes_display }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted ps-0">Price:</td>
+                                        <td class="fw-bold text-success h4 mb-0">Rs. {{ session.total_price }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted ps-0">Date:</td>
+                                        <td class="fw-bold">{{ session.scheduled_at|date:"D, d M Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted ps-0">Time:</td>
+                                        <td class="fw-bold">{{ session.scheduled_at|date:"h:i A" }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="alert alert-light border mt-4">
+                                <h6 class="fw-bold"><i class="fas fa-lightbulb text-warning me-2"></i>Verification Guide</h6>
+                                <p class="small mb-0 text-muted">Please check your bank/wallet for the amount <strong>Rs. {{ session.total_price }}</strong>. Once confirmed, approve to send a meeting link. We try your personal link, Google Calendar Meet, then Daily.co. You can also paste a link manually below.</p>
+                            </div>
+
+                            <div class="d-grid gap-3 mt-5">
+                                <button type="button" class="btn btn-success btn-lg py-3 rounded-pill fw-bold shadow-sm hover-scale" data-bs-toggle="modal" data-bs-target="#approveModal">
+                                    <i class="fas fa-check-circle me-2"></i>Approve & Send Link
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-lg py-3 rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                    <i class="fas fa-times-circle me-2"></i>Reject Payment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+{% if session.payment_screenshot %}
+<!-- Screenshot Modal -->
+<div class="modal fade" id="screenshotModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center pt-0 position-relative">
+                <div class="zoom-controls position-absolute top-0 start-50 translate-middle-x z-3 mt-2">
+                    <button class="btn btn-sm btn-light rounded-pill opacity-75" onclick="zoomImage(1.2)"><i class="fas fa-plus"></i></button>
+                    <button class="btn btn-sm btn-light rounded-pill opacity-75" onclick="zoomImage(0.8)"><i class="fas fa-minus"></i></button>
+                    <button class="btn btn-sm btn-light rounded-pill opacity-75" onclick="resetZoom()"><i class="fas fa-undo"></i></button>
+                </div>
+                <div class="overflow-auto" style="max-height: 80vh;">
+                    <img src="{{ session.payment_screenshot.url }}" id="modalImg" class="img-fluid rounded shadow-lg" style="transition: transform 0.3s ease; cursor: grab;" alt="Enlarged Proof">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Approve Confirmation Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body p-4 text-center">
+                <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Confirm Approval?</h4>
+                <p class="text-muted mb-4">Are you sure you have received the payment of <strong>Rs. {{ session.total_price }}</strong>? This will automatically generate the meeting link and notify the mentee.</p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-4 text-start">
+                        <label class="form-label fw-bold small text-muted">Manual Meeting Link (Optional)</label>
+                        <input type="url" name="manual_link" class="form-control rounded-pill px-3" placeholder="https://meet.google.com/..." value="{{ session.meeting_link|default:'' }}">
+                        <div class="form-text px-2">Leave blank to auto-generate (personal link, Google Meet, or Daily.co). Paste a link here if auto-generation fails.</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="approve" value="1" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm">
+                            Yes, Approve & Send Link
+                        </button>
+                        <button type="button" class="btn btn-light btn-lg rounded-pill fw-bold text-muted" data-bs-dismiss="modal">
+                            No, Check Again
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Confirmation Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body p-4 text-center">
+                <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                    <i class="fas fa-times"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Reject Payment?</h4>
+                <p class="text-muted mb-4">Why are you rejecting this payment? The mentee will be notified about this reason.</p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-4 text-start">
+                        <label class="form-label fw-bold small text-muted">Rejection Reason (Optional)</label>
+                        <textarea name="rejection_reason" class="form-control" rows="3" placeholder="e.g., Transaction ID mismatch, Incorrect amount..."></textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="reject" value="1" class="btn btn-danger btn-lg rounded-pill fw-bold shadow-sm">
+                            Yes, Reject Payment
+                        </button>
+                        <button type="button" class="btn btn-light btn-lg rounded-pill fw-bold text-muted" data-bs-dismiss="modal">
+                            No, Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentScale = 1;
+    const modalImg = document.getElementById('modalImg');
+
+    function zoomImage(factor) {
+        currentScale *= factor;
+        if (currentScale < 0.5) currentScale = 0.5;
+        if (currentScale > 3) currentScale = 3;
+        modalImg.style.transform = `scale(${currentScale})`;
+    }
+
+    function resetZoom() {
+        currentScale = 1;
+        modalImg.style.transform = `scale(1)`;
+    }
+
+    // Reset zoom when modal closes
+    document.getElementById('screenshotModal').addEventListener('hidden.bs.modal', function () {
+        resetZoom();
+    });
+</script>
+
+<style>
+    .letter-spacing { letter-spacing: 1px; }
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: scale(1.02); }
+    .modal-xl { max-width: 90vw; }
+</style>
+{% endblock %}

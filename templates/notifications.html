@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div
+                    class="card-header bg-transparent border-bottom py-4 px-4 d-flex justify-content-between align-items-center">
+                    <h2 class="h4 mb-0 fw-bold">
+                        <i class="fas fa-bell me-2 text-primary"></i>Your Notifications
+                    </h2>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary rounded-pill px-3">{{ notifications|length }} Total</span>
+                        {% if notifications|length > 0 %}
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light rounded-pill dropdown-toggle border" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-cog"></i> Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm mt-2" style="border-radius: 12px;">
+                                <li>
+                                    <form action="{% url 'home:mark_all_notifications_read' %}" method="POST" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item py-2">
+                                            <i class="fas fa-check-double text-primary me-2"></i>Mark all as read
+                                        </button>
+                                    </form>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button type="button" class="dropdown-item py-2 text-danger" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+                                        <i class="fas fa-trash-alt me-2"></i>Delete all notifications
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for n in notifications %}
+                        <div class="list-group-item list-group-item-action p-4 border-0 {% if not n.is_read %}bg-primary-subtle{% endif %}"
+                            style="transition: all 0.2s;">
+                            <div class="d-flex w-100 justify-content-between align-items-center flex-wrap gap-3">
+                                <div class="d-flex align-items-center flex-grow-1">
+                                    <div class="avatar-circle bg-soft-primary text-primary me-3 flex-shrink-0"
+                                        style="width: 48px; height: 48px; border-radius: 50%; background: rgba(13, 110, 253, 0.1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                        {% if n.sender %}
+                                        {% with uname=n.sender.username|first|upper %}
+                                        {{ uname }}
+                                        {% endwith %}
+                                        {% else %}
+                                        <i class="fas fa-robot"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1">
+                                            {% if n.sender %}
+                                            <span class="fw-bold">{{ n.sender.username }}</span>
+                                            {% else %}
+                                            <span class="fw-bold">System</span>
+                                            {% endif %}
+                                            {{ n.verb }}
+                                        </p>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            {% with since=n.created_at|timesince %}
+                                            <small class="text-muted"><i class="far fa-clock me-1"></i>{{ since }}
+                                                ago</small>
+                                            {% endwith %}
+
+                                            {% if n.target_session %}
+                                            {% with sched=n.target_session.scheduled_at %}
+                                            {% if sched %}
+                                            {% with fmt=sched|date:"M d, h:i A" %}
+                                            <span class="badge bg-light text-muted border fw-normal">
+                                                Scheduled: {{ fmt }}
+                                            </span>
+                                            {% endwith %}
+                                            {% endif %}
+                                            {% endwith %}
+                                            {% endif %}
+                                        </div>
+
+                                        {% if n.link %}
+                                        <div class="mt-3">
+                                            {% if 'connection' in n.verb %}
+                                            <a href="{{ n.link }}" 
+                                                class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                                                <i class="fas fa-user-friends me-1"></i> Show Connect
+                                            </a>
+                                            {% elif 'View Payment Screenshot' in n.verb %}
+                                            <a href="{{ n.link }}" 
+                                                class="btn btn-sm btn-info rounded-pill px-4 fw-bold shadow-sm text-white">
+                                                <i class="fas fa-search-dollar me-1"></i> View Screenshot
+                                            </a>
+                                            {% elif 'booking is pending' in n.verb or 'please make the payment' in n.verb %}
+                                            <a href="{{ n.link }}" 
+                                                class="btn btn-sm btn-warning rounded-pill px-4 fw-bold shadow-sm text-dark">
+                                                <i class="fas fa-credit-card me-1"></i> Pay Now
+                                            </a>
+                                            {% elif 'verified' in n.verb or 'now join' in n.verb or 'meeting link is now available' in n.verb %}
+                                            <a href="{{ n.link }}" target="_blank"
+                                                class="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-sm">
+                                                <i class="fas fa-video me-1"></i> Join Meeting
+                                            </a>
+                                            {% elif 'rate your session' in n.verb or 'provide feedback' in n.verb %}
+                                            <a href="{{ n.link }}"
+                                                class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm text-white">
+                                                <i class="fas fa-star text-warning me-1"></i> Rate Session
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if not n.is_read %}
+                                <div class="ms-auto">
+                                    <a href="{% url 'home:mark_notification_read' n.id %}"
+                                        class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        Mark as Read
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bell-slash display-1 text-muted opacity-25 mb-3"></i>
+                            <h4 class="text-muted">No notifications yet</h4>
+                            <p class="text-muted mb-0">We'll alert you here when someone interacts with your sessions.
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .list-group-item:hover {
+        background-color: var(--bg-card) !important;
+        box-shadow: inset 0 0 0 1px var(--border-color);
+    }
+
+    .bg-soft-primary {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+    }
+</style>
+{% endblock %}
+
+{% block modals %}
+<!-- Delete All Modal -->
+<div class="modal fade" id="deleteAllModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body p-4 text-center">
+                <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Clear All?</h4>
+                <p class="text-muted mb-4">Are you sure you want to permanently delete all your notifications? This action cannot be undone.</p>
+                
+                <form action="{% url 'home:delete_all_notifications' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg rounded-pill fw-bold shadow-sm">
+                            Yes, Clear Everything
+                        </button>
+                        <button type="button" class="btn btn-light btn-lg rounded-pill fw-bold text-muted" data-bs-dismiss="modal">
+                            No, Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Submit Payment - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px;">
+                <div class="card-header bg-primary py-4 text-center border-0">
+                    <h2 class="text-white mb-0 fw-bold"><i class="fas fa-wallet me-2"></i>Complete your Payment</h2>
+                </div>
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <div class="alert alert-info border-0 shadow-sm mb-5" style="border-radius: 12px; background: linear-gradient(135deg, #eef2f3 0%, #d1d9e6 100%);">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x text-primary"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 fw-bold text-dark">Payment Required</h5>
+                                <p class="mb-0 text-muted">To confirm your booking for <strong>{{ session.subject_detail }}</strong>, please transfer the exact amount to the mentor below.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-5 g-4">
+                        <div class="col-md-6">
+                            <h5 class="fw-bold text-dark mb-4">Mentor's Payment Details</h5>
+                            <div class="p-3 bg-light rounded shadow-sm">
+                                <p class="mb-2"><span class="text-muted small text-uppercase fw-bold d-block">Method:</span> <span class="fw-bold">{{ mentor.payment_method|default:"Not specified" }}</span></p>
+                                <p class="mb-2"><span class="text-muted small text-uppercase fw-bold d-block">Account Title:</span> <span class="fw-bold">{{ mentor.account_title|default:"Not specified" }}</span></p>
+                                <p class="mb-0"><span class="text-muted small text-uppercase fw-bold d-block">Number / IBAN:</span> <span class="fw-bold text-primary">{{ mentor.account_number_or_iban|default:"Not specified" }}</span></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 border-start ps-md-4">
+                            <h5 class="fw-bold text-dark mb-4">Session Summary</h5>
+                            <div class="p-3 bg-light rounded shadow-sm border-start border-4 border-success">
+                                <p class="mb-2"><span class="text-muted small text-uppercase fw-bold d-block">Duration:</span> <span class="fw-bold">{{ session.get_duration_minutes_display }}</span></p>
+                                <p class="mb-2"><span class="text-muted small text-uppercase fw-bold d-block">Scheduled For:</span> <span class="fw-bold">{{ session.scheduled_at|date:"d-m-Y H:i" }}</span></p>
+                                <p class="mb-0 text-success"><span class="small text-uppercase fw-bold d-block">Total Amount:</span> <span class="h3 mb-0 fw-bold">Rs. {{ session.total_price }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-5 opacity-10">
+
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-5 text-center">
+                            <label for="id_payment_screenshot" class="form-label fw-bold h5 mb-3">Upload Transaction Screenshot</label>
+                            <div class="upload-area p-5 border-2 border-dashed rounded-4 bg-light cursor-pointer position-relative" id="drop-area">
+                                <input type="file" name="payment_screenshot" id="id_payment_screenshot" class="position-absolute w-100 h-100 opacity-0 top-0 start-0 cursor-pointer" required accept="image/*">
+                                <div id="preview-container" class="d-none">
+                                    <img id="image-preview" src="#" class="img-fluid rounded shadow-sm mb-3" style="max-height: 250px;">
+                                    <p class="text-primary fw-bold mb-0">File selected! Click to change.</p>
+                                </div>
+                                <div id="placeholder-content">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <p class="mb-0 fw-bold text-dark">Drag & Drop or Click to Upload</p>
+                                    <p class="text-muted small">Please upload the transaction screenshot here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold hover-scale shadow">
+                                    <i class="fas fa-check-circle me-2"></i>Submit Proof
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'home:index' %}" class="btn btn-outline-secondary w-100 py-3 rounded-pill fw-bold">
+                                    Pay Later
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .upload-area {
+        transition: all 0.2s ease;
+        border-color: #dee2e6;
+    }
+    .upload-area:hover {
+        border-color: #0d6efd;
+        background-color: #f8f9fa !important;
+    }
+    .cursor-pointer { cursor: pointer; }
+    .hover-scale:hover { transform: scale(1.02); }
+</style>
+
+<script>
+    document.getElementById('id_payment_screenshot').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('preview-container').classList.remove('d-none');
+                document.getElementById('placeholder-content').classList.add('d-none');
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Handle Drag and Drop focus
+    const dropArea = document.getElementById('drop-area');
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.add('border-primary'), false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.remove('border-primary'), false);
+    });
+</script>
+{% endblock %}

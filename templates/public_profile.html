@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ target_user.full_name|default:target_user.username }} - Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Sidebar Profile Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden sticky-top" style="top: 100px;">
+                <div class="card-body text-center p-5">
+                    <div class="avatar-circle bg-primary text-white mx-auto mb-4 shadow-sm d-flex align-items-center justify-content-center fw-bold"
+                        style="width: 120px; height: 120px; border-radius: 50%; font-size: 3rem;">
+                        {{ target_user.full_name|default:target_user.username|first|upper }}
+                    </div>
+                    
+                    <h3 class="fw-bold text-dark mb-1">{{ target_user.full_name|default:target_user.username }}</h3>
+                    <p class="text-muted mb-3">
+                        <i class="fas {% if target_user.user_type == 'mentor' %}fa-chalkboard-teacher text-success{% else %}fa-user-graduate text-info{% endif %} me-2"></i>
+                        {{ target_user.user_type|title }}
+                    </p>
+
+                    {% if target_user.user_type == 'mentor' and target_user.average_rating > 0 %}
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-4 bg-light rounded-pill py-2 px-3 mx-auto" style="width: max-content;">
+                        <i class="fas fa-star text-warning fs-5"></i>
+                        <span class="fs-5 fw-bold text-dark">{{ target_user.average_rating }}</span>
+                        <span class="text-muted">({{ target_user.total_reviews }} reviews)</span>
+                    </div>
+                    {% endif %}
+
+                    {% if request.user != target_user and request.user.is_authenticated %}
+                        {% if connection_status == 'accepted' %}
+                        <div class="alert alert-success rounded-pill py-2 fw-bold shadow-sm mb-3">
+                            <i class="fas fa-check-circle me-2"></i>Connected
+                        </div>
+                        <a href="{% url 'home:chat_room' target_user.id %}" class="btn btn-outline-primary w-100 rounded-pill py-2 fw-bold shadow-sm mb-3">
+                            <i class="fas fa-comment-dots me-2"></i>Message
+                        </a>
+                        {% elif connection_status == 'pending' %}
+                            {% if is_receiver %}
+                            <div class="d-grid gap-2 mb-3">
+                                <form action="{% url 'home:manage_connect_requests' %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="request_id" value="{{ connection_id }}">
+                                    <button type="submit" name="action" value="accept" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm mb-2">
+                                        Accept Request
+                                    </button>
+                                    <button type="submit" name="action" value="reject" class="btn btn-outline-danger w-100 rounded-pill py-2 fw-bold shadow-sm">
+                                        Decline
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning rounded-pill py-2 fw-bold shadow-sm mb-3 text-center">
+                                <i class="fas fa-hourglass-half me-2"></i>Connect Request Pending
+                            </div>
+                            {% endif %}
+                        {% else %}
+                        <form action="{% url 'home:send_connect_request' target_user.id %}" method="POST" class="mb-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm">
+                                <i class="fas fa-user-plus me-2"></i>Connect
+                            </button>
+                        </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer bg-light border-0 p-4">
+                    <h6 class="fw-bold text-uppercase text-muted small mb-3">About</h6>
+                    <p class="small text-dark mb-4" style="line-height: 1.6;">
+                        {{ target_user.mentor_bio|default:"No biography provided." }}
+                    </p>
+
+                    <h6 class="fw-bold text-uppercase text-muted small mb-3">Expertise</h6>
+                    <p class="small text-dark mb-4">
+                        {{ target_user.mentor_expertise|default:"Not specified." }}
+                    </p>
+
+                    {% if target_user.skills.all %}
+                    <h6 class="fw-bold text-uppercase text-muted small mb-3">Skills</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for tag in target_user.skills.all %}
+                        <span class="badge bg-white text-primary border border-primary" style="font-weight: 500;">
+                            {{ tag.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content (Reviews) -->
+        <div class="col-lg-8">
+            <h4 class="fw-bold text-dark mb-4">Reviews & Feedback</h4>
+            
+            {% if not reviews %}
+            <div class="card border-0 bg-light rounded-4 text-center p-5">
+                <i class="fas fa-comment-slash fa-3x text-muted opacity-50 mb-3"></i>
+                <h5 class="text-muted fw-bold">No reviews yet.</h5>
+                <p class="text-muted mb-0">Book a session to be the first to leave feedback!</p>
+            </div>
+            {% else %}
+            <div class="row g-4">
+                {% for review in reviews %}
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 hover-shadow transition-all">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-secondary text-white me-3 d-flex align-items-center justify-content-center fw-bold"
+                                        style="width: 45px; height: 45px; border-radius: 50%; font-size: 1.1rem;">
+                                        {{ review.reviewer.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold text-dark">{{ review.reviewer.full_name|default:review.reviewer.username }}</h6>
+                                        <small class="text-muted">{{ review.created_at|date:"F j, Y" }}</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-warning">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <p class="text-dark mb-0" style="font-size: 0.95rem; line-height: 1.6;">
+                                "{{ review.comment }}"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        transform: translateY(-2px);
+    }
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}

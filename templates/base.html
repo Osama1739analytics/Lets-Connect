@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Let's Connect{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-rgb: 99, 102, 241;
+            --primary-hover: #4f46e5;
+            --secondary: #64748b;
+            --bg-body: #f4f6ff;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --bg-elevated: #ffffff;
+            --bg-soft: #eef2ff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(148, 163, 184, 0.24);
+            --nav-bg: rgba(255, 255, 255, 0.82);
+            --card-shadow: 0 20px 35px -22px rgba(15, 23, 42, 0.35);
+            --glass-blur: blur(14px);
+        }
+
+        [data-bs-theme="dark"] {
+            --primary: #818cf8;
+            --primary-rgb: 129, 140, 248;
+            --primary-hover: #6366f1;
+            --secondary: #94a3b8;
+            --bg-body: #060e20;
+            --bg-card: rgba(15, 23, 42, 0.88);
+            --bg-elevated: #111c31;
+            --bg-soft: #17233f;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: rgba(148, 163, 184, 0.28);
+            --nav-bg: rgba(8, 16, 33, 0.86);
+            --card-shadow: 0 30px 45px -24px rgba(0, 0, 0, 0.6);
+            --glass-blur: blur(16px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(var(--primary-rgb), 0.12) 0%, transparent 42%),
+                radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.12) 0%, transparent 38%);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 20% 15%, rgba(var(--primary-rgb), 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 80% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .navbar-custom {
+            background: var(--nav-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.9rem 0;
+            z-index: 1100;
+        }
+
+        .navbar-toggler {
+            color: var(--text-main);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        .navbar-brand .brand-text {
+            font-size: 1.45rem;
+            letter-spacing: -0.8px;
+            color: var(--text-main);
+        }
+
+        .navbar-brand .brand-accent {
+            color: var(--primary);
+        }
+
+        .nav-links-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-link-custom {
+            font-weight: 600;
+            color: var(--text-muted) !important;
+            padding: 0.58rem 0.92rem !important;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+
+        .nav-link-custom:hover,
+        .nav-link-custom.active {
+            color: var(--primary) !important;
+            background: rgba(var(--primary-rgb), 0.12);
+            border-color: rgba(var(--primary-rgb), 0.2);
+            transform: translateY(-1px);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: nowrap;
+        }
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+            position: relative;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .action-btn:hover,
+        .action-btn.active-action {
+            color: var(--primary);
+            background: rgba(var(--primary-rgb), 0.1);
+            border-color: rgba(var(--primary-rgb), 0.35);
+            transform: translateY(-1px);
+        }
+
+        .badge-pulse {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid var(--bg-body);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        [data-bs-theme="dark"] .fa-sun { display: block; }
+        [data-bs-theme="dark"] .fa-moon { display: none; }
+        [data-bs-theme="light"] .fa-sun { display: none; }
+        [data-bs-theme="light"] .fa-moon { display: block; }
+
+        .user-dropdown-trigger {
+            padding: 4px 12px 4px 4px;
+            border-radius: 50px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .user-dropdown-trigger:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 18px -14px rgba(var(--primary-rgb), 0.8);
+        }
+
+        .avatar-main {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .dropdown-menu {
+            border: 1px solid var(--border-color) !important;
+            box-shadow: var(--card-shadow) !important;
+        }
+
+        .dropdown-item {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item:focus {
+            background: var(--bg-soft);
+            color: var(--primary);
+        }
+
+        main { position: relative; z-index: 10; }
+
+        .card,
+        .modal-content,
+        .list-group-item,
+        .accordion-item,
+        .toast,
+        .offcanvas,
+        .table,
+        .form-control,
+        .form-select,
+        .input-group-text {
+            border-color: var(--border-color);
+        }
+
+        .card,
+        .modal-content,
+        .list-group-item,
+        .offcanvas,
+        .dropdown-menu,
+        .toast,
+        .table {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        .card-header,
+        .card-footer,
+        .modal-header,
+        .modal-footer,
+        .list-group-item + .list-group-item,
+        .dropdown-divider {
+            border-color: var(--border-color) !important;
+        }
+
+        .bg-white,
+        .bg-light,
+        .bg-light-subtle,
+        .bg-body-tertiary {
+            background-color: var(--bg-card) !important;
+        }
+
+        .text-dark,
+        .text-dark-emphasis {
+            color: var(--text-main) !important;
+        }
+
+        .text-secondary,
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .form-control,
+        .form-select {
+            background: var(--bg-soft);
+            color: var(--text-main);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: var(--bg-elevated);
+            color: var(--text-main);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.18);
+        }
+
+        .btn-light {
+            background: var(--bg-soft);
+            border-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-light:hover {
+            background: var(--bg-card);
+            border-color: var(--primary);
+            color: var(--text-main);
+        }
+
+        [data-bs-theme="dark"] .btn-close {
+            filter: invert(1) grayscale(100%);
+        }
+
+        [data-bs-theme="dark"] .bg-primary-subtle {
+            background-color: rgba(129, 140, 248, 0.22) !important;
+            color: #c7d2fe !important;
+        }
+
+        [data-bs-theme="dark"] .bg-success-subtle {
+            background-color: rgba(34, 197, 94, 0.2) !important;
+            color: #86efac !important;
+        }
+
+        [data-bs-theme="dark"] .bg-warning-subtle {
+            background-color: rgba(250, 204, 21, 0.2) !important;
+            color: #fef08a !important;
+        }
+
+        [data-bs-theme="dark"] .bg-info-subtle {
+            background-color: rgba(56, 189, 248, 0.2) !important;
+            color: #bae6fd !important;
+        }
+
+        @media (max-width: 1199.98px) {
+            .nav-link-custom {
+                padding: 0.52rem 0.8rem !important;
+                font-size: 0.93rem;
+            }
+
+            .nav-actions {
+                gap: 0.6rem;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .navbar-collapse {
+                background: var(--bg-elevated);
+                margin-top: 0.9rem;
+                padding: 1rem;
+                border-radius: 18px;
+                border: 1px solid var(--border-color);
+                box-shadow: var(--card-shadow);
+            }
+
+            .nav-links-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.35rem;
+            }
+
+            .nav-link-custom {
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .nav-actions {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid var(--border-color);
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .user-dropdown-trigger {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .navbar-brand .brand-text {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .action-btn {
+                width: 38px;
+                height: 38px;
+            }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+
+    <nav class="navbar navbar-expand-md sticky-top navbar-custom">
+        <div class="container">
+            <!-- Brand -->
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home:index' %}">
+                <i class="fas fa-graduation-cap text-primary fs-2 me-2"></i>
+                <span class="brand-text fw-bold">Let's <span class="brand-accent">Connect</span></span>
+            </a>
+
+            <!-- Mobile Toggler -->
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#appNavbar" aria-controls="appNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars-staggered fs-4"></i>
+            </button>
+
+            <!-- Navbar Content -->
+            <div class="collapse navbar-collapse" id="appNavbar">
+                <div class="nav-links-wrapper mx-auto">
+                    <a href="{% url 'home:index' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                    <a href="{% url 'home:browse_sessions' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'browse_sessions' %}active{% endif %}">
+                        <i class="fas fa-compass"></i> Browse
+                    </a>
+                    <a href="{% url 'home:manage_connect_requests' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'manage_connect_requests' %}active{% endif %}">
+                        <i class="fas fa-users"></i> Connects
+                        {% if user.pending_connections_count > 0 %}
+                        <span class="badge rounded-pill bg-danger ms-1" style="font-size: 0.6rem;">{{ user.pending_connections_count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'home:hub_dashboard' %}" class="nav-link-custom {% if 'hub' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-book-reader"></i> Hub
+                    </a>
+                    <a href="{% url 'home:support_home' %}" class="nav-link-custom {% if 'support' in request.resolver_match.url_name and 'assistant' not in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-question-circle"></i> Support
+                    </a>
+                    <a href="{% url 'home:ai_assistant_home' %}" class="nav-link-custom {% if 'assistant' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-robot"></i> Assistant
+                    </a>
+                </div>
+
+                <div class="nav-actions">
+                    <!-- Theme Toggle -->
+                    <button class="action-btn theme-toggle" id="themeSwitcher" title="Toggle Dark/Light Mode">
+                        <i class="fas fa-moon"></i>
+                        <i class="fas fa-sun"></i>
+                    </button>
+
+                    {% if user.is_authenticated %}
+                    <!-- Chat -->
+                    <a href="{% url 'home:chat_inbox' %}" class="action-btn {% if request.resolver_match.url_name == 'chat_inbox' or request.resolver_match.url_name == 'chat_room' %}active-action{% endif %}" title="Messages" aria-label="Open messages">
+                        <i class="fas fa-comment-dots"></i>
+                        {% if user.unread_messages_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; padding: 0.25em 0.5em; border: 2px solid var(--bg-card);" id="chat-count-badge">
+                            {{ user.unread_messages_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Notifications -->
+                    <a href="{% url 'home:notifications' %}" class="action-btn {% if request.resolver_match.url_name == 'notifications' %}active-action{% endif %}" title="Notifications" aria-label="Open notifications">
+                        <i class="fas fa-bell"></i>
+                        {% if user.unread_notifications_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; padding: 0.25em 0.5em; border: 2px solid var(--bg-card);" id="notification-count-badge">
+                            {{ user.unread_notifications_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Profile Dropdown -->
+                    <div class="dropdown">
+                        <a href="#" class="user-dropdown-trigger" data-bs-toggle="dropdown">
+                            <div class="avatar-main position-relative">
+                                {{ user.username|first|upper }}
+                                {% if user.presence_status == 'online' %}
+                                <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle" style="transform: translate(20%, 20%); width: 12px; height: 12px;"></span>
+                                {% elif user.presence_status == 'busy' %}
+                                <span class="position-absolute bottom-0 end-0 p-1 bg-danger border border-white rounded-circle" style="transform: translate(20%, 20%); width: 12px; height: 12px;"></span>
+                                {% elif user.presence_status == 'away' %}
+                                <span class="position-absolute bottom-0 end-0 p-1 bg-warning border border-white rounded-circle" style="transform: translate(20%, 20%); width: 12px; height: 12px;"></span>
+                                {% else %}
+                                <span class="position-absolute bottom-0 end-0 p-1 bg-secondary border border-white rounded-circle" style="transform: translate(20%, 20%); width: 12px; height: 12px;"></span>
+                                {% endif %}
+                            </div>
+                            <span class="d-none d-xl-inline text-muted small fw-bold">{{ user.username|truncatechars:10 }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2 mt-2" style="background: var(--bg-card); backdrop-filter: var(--glass-blur); min-width: 200px;">
+                            <li><a class="dropdown-item rounded-3 py-2 text-dark-emphasis" href="{% url 'home:profile' %}"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
+                            <li><a class="dropdown-item rounded-3 py-2 text-dark-emphasis" href="{% url 'home:edit_profile' %}"><i class="fas fa-sliders me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider opacity-10"></li>
+                            <li><h6 class="dropdown-header text-muted small fw-bold">Set Status</h6></li>
+                            <li>
+                                <form action="{% url 'home:update_presence' %}" method="POST" class="m-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="online">
+                                    <button type="submit" class="dropdown-item rounded-3 py-1 {% if user.presence_status == 'online' %}bg-primary-subtle{% endif %}"><i class="fas fa-circle text-success me-2" style="font-size: 0.7rem;"></i>Online</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="{% url 'home:update_presence' %}" method="POST" class="m-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="busy">
+                                    <button type="submit" class="dropdown-item rounded-3 py-1 {% if user.presence_status == 'busy' %}bg-primary-subtle{% endif %}"><i class="fas fa-circle text-danger me-2" style="font-size: 0.7rem;"></i>Busy</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="{% url 'home:update_presence' %}" method="POST" class="m-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="away">
+                                    <button type="submit" class="dropdown-item rounded-3 py-1 {% if user.presence_status == 'away' %}bg-primary-subtle{% endif %}"><i class="fas fa-circle text-warning me-2" style="font-size: 0.7rem;"></i>Away</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="{% url 'home:update_presence' %}" method="POST" class="m-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="offline">
+                                    <button type="submit" class="dropdown-item rounded-3 py-1 {% if user.presence_status == 'offline' %}bg-primary-subtle{% endif %}"><i class="fas fa-circle text-secondary me-2" style="font-size: 0.7rem;"></i>Offline</button>
+                                </form>
+                            </li>
+                            <li><hr class="dropdown-divider opacity-10"></li>
+                            <li><a class="dropdown-item rounded-3 py-2 text-danger fw-bold" href="{% url 'home:logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{% url 'home:login' %}" class="btn btn-link text-decoration-none text-muted fw-bold">Login</a>
+                        <a href="{% url 'home:signup' %}" class="btn btn-primary rounded-pill px-4 shadow-sm">Join Free</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-4 shadow-sm border-0 mb-3 py-3" role="alert" style="background: var(--bg-card); backdrop-filter: var(--glass-blur);">
+            <div class="d-flex align-items-center">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle text-success{% else %}fa-info-circle text-primary{% endif %} fs-4 me-3"></i>
+                <div class="text-dark-emphasis fw-medium">{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="py-4">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    {% block modals %}{% endblock %}
+
+    <!-- JS Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme Management
+        const themeSwitcher = document.getElementById('themeSwitcher');
+        const docRoot = document.documentElement;
+
+        function applyTheme(theme) {
+            docRoot.setAttribute('data-bs-theme', theme);
+            if (themeSwitcher) {
+                const nextLabel = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+                themeSwitcher.setAttribute('title', nextLabel);
+                themeSwitcher.setAttribute('aria-label', nextLabel);
+            }
+        }
+
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = localStorage.getItem('theme') || (prefersDark ? 'dark' : 'light');
+        applyTheme(savedTheme);
+
+        if (themeSwitcher) {
+            themeSwitcher.addEventListener('click', () => {
+                const currentTheme = docRoot.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                applyTheme(newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+
+        // WebSocket Logic (Persisted from previous version)
+        {% if user.is_authenticated %}
+        const notifySocket = new WebSocket((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws/notifications/');
+        notifySocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'notification') {
+                // If it's a chat message notification and we're currently on the chat page, suppress the toast
+                if (window.location.pathname.includes('/chat/') && data.link && data.link.includes('/chat/')) {
+                    if (typeof window.updateSidebarFromNotification === 'function') {
+                        window.updateSidebarFromNotification(data);
+                    }
+                    return;
+                }
+                showToast(data.sender, data.verb, data.link);
+            }
+        };
+
+        function showToast(sender, verb, link) {
+            let container = document.getElementById('toast-box');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-box';
+                container.className = 'position-fixed bottom-0 end-0 p-3';
+                container.style.zIndex = '3000';
+                document.body.appendChild(container);
+            }
+            const id = 'toast-' + Date.now();
+            const html = `<div id="${id}" class="toast shadow-lg border-0 rounded-4 mb-3 overflow-hidden" role="alert" style="background: var(--bg-card); backdrop-filter: var(--glass-blur);">
+                <div class="toast-header border-0 bg-primary text-white py-2">
+                    <strong class="me-auto"><i class="fas fa-bell me-2"></i>New Update</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body p-3">
+                    <p class="mb-2 text-dark-emphasis"><strong>${sender}</strong> ${verb}</p>
+                    <a href="${link}" class="btn btn-sm btn-primary rounded-pill px-3">View Now</a>
+                </div>
+            </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+            const t = new bootstrap.Toast(document.getElementById(id), { delay: 10000 });
+            t.show();
+        }
+        {% endif %}
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

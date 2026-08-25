@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Complete Your Profile - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 30px; overflow: hidden; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);">
+                <div class="card-header bg-primary text-white p-5 text-center border-0">
+                    <h2 class="fw-bold mb-2">Welcome to the Community! 🚀</h2>
+                    <p class="mb-0 opacity-75">Let's get your profile ready for the best experience.</p>
+                </div>
+                
+                <div class="card-body p-5 text-dark">
+                    <div class="progress mb-5" style="height: 10px; border-radius: 5px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 50%;"></div>
+                    </div>
+
+                    <form method="POST" class="needs-validation">
+                        {% csrf_token %}
+                        
+                        <!-- Step 1: Calendar Connection -->
+                        <div class="mb-5 pb-4 border-bottom">
+                            <h4 class="fw-bold mb-3"><i class="fas fa-calendar-alt text-primary me-2"></i>Step 1: Calendar Sync</h4>
+                            <p class="text-muted mb-4">Connect your Google Calendar to automatically sync your mentoring sessions and prevent scheduling conflicts.</p>
+                            
+                            {% if not user.is_calendar_connected %}
+                            <div class="d-flex flex-wrap gap-3">
+                                <form action="{% url 'social:begin' 'google-oauth2' %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" class="btn btn-danger btn-lg rounded-pill px-5 fw-bold shadow-sm hover-elevate">
+                                        <i class="fab fa-google me-2"></i>Connect Google Calendar
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-success d-flex align-items-center rounded-4 shadow-sm mb-3">
+                                <i class="fas fa-check-circle fs-4 me-3"></i>
+                                <div>
+                                    <strong class="d-block">Google Calendar Connected!</strong>
+                                    <span class="small">Your sessions will now stay in sync with your personal schedule.</span>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Always show Reset/Reconnect option for troubleshooting -->
+                            <div class="mt-4 pt-3 border-top">
+                                <form action="{% url 'social:disconnect' 'google-oauth2' %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" class="btn btn-link text-muted text-decoration-none small p-0 fw-bold">
+                                        <i class="fas fa-sync-alt me-1"></i> Reconnect or Reset Google Account
+                                    </button>
+                                </form>
+                                <div class="mt-2 small text-muted">
+                                    <i class="fas fa-info-circle me-1"></i> <strong>Trouble with meeting links?</strong> Use the reset link above to re-authorize all permissions.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Personal Details -->
+                        <div class="mb-5 pb-4">
+                            <h4 class="fw-bold mb-4"><i class="fas fa-user-edit text-primary me-2"></i>Step 2: Profile Details</h4>
+                            
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Age</label>
+                                    <input type="number" name="age" class="form-control form-control-lg rounded-4 bg-light border-0 px-4" value="{{ user.age|default:'' }}" placeholder="e.g. 25" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Contact Number</label>
+                                    <input type="text" name="contact_number" class="form-control form-control-lg rounded-4 bg-light border-0 px-4" value="{{ user.contact_number|default:'' }}" placeholder="+92 300 1234567" required>
+                                </div>
+
+                                {% if user.user_type == 'mentor' %}
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Expertise</label>
+                                    <input type="text" name="mentor_expertise" class="form-control form-control-lg rounded-4 bg-light border-0 px-4" value="{{ user.mentor_expertise|default:'' }}" placeholder="e.g. Python, Machine Learning, UI/UX Design" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-primary"><i class="fas fa-link me-1"></i>Permanent Meeting Link (Optional)</label>
+                                    <input type="url" name="personal_meeting_link" class="form-control form-control-lg rounded-4 bg-light border-0 px-4" value="{{ user.personal_meeting_link|default:'' }}" placeholder="https://meet.google.com/your-permanent-id">
+                                    <div class="form-text px-2">Use a permanent Zoom or Google Meet link for a smoother experience.</div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Brief Bio</label>
+                                    <textarea name="mentor_bio" rows="4" class="form-control form-control-lg rounded-4 bg-light border-0 px-4 py-3" placeholder="Tell mentees a bit about your professional journey...">{{ user.mentor_bio|default:'' }}</textarea>
+                                </div>
+                                {% else %}
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Learning Goals</label>
+                                    <textarea name="learning_goals" rows="4" class="form-control form-control-lg rounded-4 bg-light border-0 px-4 py-3" placeholder="What are you hoping to achieve through mentorship?">{{ user.learning_goals|default:'' }}</textarea>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-grid pt-3">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-lg py-3 hover-elevate">
+                                Complete Setup <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-elevate {
+        transition: all 0.3s ease;
+    }
+    .hover-elevate:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    .bg-light {
+        background-color: #f1f3f5 !important;
+    }
+    .text-dark {
+        color: #212529 !important;
+    }
+    .form-control::placeholder {
+        color: #adb5bd !important;
+    }
+    .form-control {
+        color: #212529 !important;
+    }
+    .text-muted {
+        color: #6c757d !important;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #212529 !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Start a Discussion - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home:hub_dashboard' %}" class="text-decoration-none">Knowledge Hub</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'home:forum_list' %}" class="text-decoration-none">Forum</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">New Thread</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white mt-3">
+                <div class="card-header bg-warning text-dark p-4 border-0">
+                    <h4 class="fw-bold mb-1"><i class="fas fa-plus me-2"></i>Start a Discussion</h4>
+                    <p class="mb-0 small text-dark-50">Create a topic to ask for advice or start a debate with the community.</p>
+                </div>
+                <div class="card-body p-5">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Discussion Title <span class="text-danger">*</span></label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Topic category</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Content / Question Details <span class="text-danger">*</span></label>
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                            <div class="text-danger small mt-1">{{ form.content.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-end mt-5">
+                            <a href="{% url 'home:forum_list' %}" class="btn btn-light rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-warning text-dark rounded-pill px-5 fw-bold shadow-sm">Post Discussion</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

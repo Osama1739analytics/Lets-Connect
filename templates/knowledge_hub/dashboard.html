@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Knowledge Hub - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <!-- Header Banner -->
+    <div class="row mb-5 text-center text-lg-start align-items-center bg-white p-5 rounded-4 shadow-sm position-relative overflow-hidden" 
+         style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%); border-left: 6px solid #6366f1;">
+        <div class="col-lg-8">
+            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-bold mb-3">📚 Community Learning Center</span>
+            <h1 class="display-4 fw-bold text-dark mb-3">Welcome to the Knowledge Hub</h1>
+            <p class="lead text-secondary mb-0">Share educational materials, read professional articles, and engage in meaningful discussions with your peers and mentors.</p>
+        </div>
+        <div class="col-lg-4 text-center d-none d-lg-block">
+            <i class="fas fa-graduation-cap fa-8x text-primary-subtle opacity-75"></i>
+        </div>
+    </div>
+
+    <!-- Navigation Hub Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 hover-up transition-all bg-white">
+                <div class="icon-circle bg-primary-subtle text-primary mx-auto mb-3">
+                    <i class="fas fa-file-alt fs-4"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Resource Library</h4>
+                <p class="text-secondary small mb-4">Access files, documents, and reference links shared by mentors.</p>
+                <a href="{% url 'home:resource_list' %}" class="btn btn-outline-primary rounded-pill w-100 fw-bold">Browse Resources</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 hover-up transition-all bg-white">
+                <div class="icon-circle bg-success-subtle text-success mx-auto mb-3">
+                    <i class="fas fa-journal-whills fs-4"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Blogs & Articles</h4>
+                <p class="text-secondary small mb-4">Read expert opinions, guides, and career advice written by mentors.</p>
+                <a href="{% url 'home:blog_list' %}" class="btn btn-outline-success rounded-pill w-100 fw-bold">Read Blogs</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 hover-up transition-all bg-white">
+                <div class="icon-circle bg-warning-subtle text-warning mx-auto mb-3">
+                    <i class="fas fa-comments fs-4"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Discussion Forum</h4>
+                <p class="text-secondary small mb-4">Ask questions, share advice, and connect in public boards.</p>
+                <a href="{% url 'home:forum_list' %}" class="btn btn-outline-warning text-dark rounded-pill w-100 fw-bold">Join Forum</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Previews Grid -->
+    <div class="row g-5">
+        <!-- Left: Blogs & Forum -->
+        <div class="col-lg-8">
+            <!-- Latest Blog Section -->
+            <div class="mb-5">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h3 class="fw-bold text-dark mb-0"><i class="fas fa-feather-alt text-success me-2"></i>Latest Blog Posts</h3>
+                    <a href="{% url 'home:blog_list' %}" class="small text-decoration-none fw-bold">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+                <div class="row g-4">
+                    {% for blog in latest_blogs %}
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white hover-up transition-all">
+                            <div class="card-body p-4">
+                                <span class="badge bg-success-subtle text-success mb-2 px-2 py-1 rounded">{{ blog.category.name|default:"General" }}</span>
+                                <h5 class="fw-bold text-dark mb-2">{{ blog.title }}</h5>
+                                <p class="text-muted small line-clamp-2 mb-3">{{ blog.content|striptags|truncatewords:25 }}</p>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                            {{ blog.author.username|slice:":2"|upper }}
+                                        </div>
+                                        <span class="small text-secondary">By {{ blog.author.full_name|default:blog.author.username }}</span>
+                                    </div>
+                                    <a href="{% url 'home:blog_detail' blog.slug %}" class="btn btn-sm btn-link text-success fw-bold text-decoration-none p-0">Read More <i class="fas fa-chevron-right ms-1"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-4 bg-light rounded-4">
+                        <p class="text-muted mb-0">No blog posts published yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Active Discussions Section -->
+            <div>
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h3 class="fw-bold text-dark mb-0"><i class="fas fa-users text-warning me-2"></i>Active Discussions</h3>
+                    <a href="{% url 'home:forum_list' %}" class="small text-decoration-none fw-bold text-warning">View Forum <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+                <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+                    <div class="list-group list-group-flush">
+                        {% for thread in active_threads %}
+                        <a href="{% url 'home:forum_thread_detail' thread.id %}" class="list-group-item list-group-item-action border-0 py-3 rounded-3 hover-bg">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold text-dark mb-0">{{ thread.title }}</h6>
+                                <span class="badge bg-warning-subtle text-warning px-2 py-1 rounded small">{{ thread.category.name|default:"General" }}</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between text-secondary" style="font-size: 0.8rem;">
+                                <span>Started by @{{ thread.author.username }}</span>
+                                <span><i class="far fa-comment-dots me-1"></i>{{ thread.comments.count }} replies</span>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No forum threads started yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Recent Resources -->
+        <div class="col-lg-4">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h3 class="fw-bold text-dark mb-0"><i class="fas fa-file-download text-primary me-2"></i>New Resources</h3>
+                <a href="{% url 'home:resource_list' %}" class="small text-decoration-none fw-bold">See All</a>
+            </div>
+            <div class="row g-3">
+                {% for res in latest_resources %}
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="icon-box bg-light-primary text-primary rounded-3 d-flex align-items-center justify-content-center p-3" style="width: 48px; height: 48px; background-color: rgba(99, 102, 241, 0.1);">
+                                {% if res.file %}
+                                <i class="fas fa-file-pdf fs-5"></i>
+                                {% else %}
+                                <i class="fas fa-link fs-5"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <h6 class="fw-bold text-dark mb-1 text-truncate">{{ res.title }}</h6>
+                                <p class="text-muted small mb-2 text-truncate">{{ res.description|default:"No description" }}</p>
+                                
+                                {% if res.file %}
+                                <a href="{{ res.file.url }}" download class="btn btn-sm btn-primary py-1 px-3 rounded-pill fw-bold" style="font-size: 0.75rem;"><i class="fas fa-download me-1"></i>Download</a>
+                                {% elif res.link %}
+                                <a href="{{ res.link }}" target="_blank" class="btn btn-sm btn-outline-primary py-1 px-3 rounded-pill fw-bold" style="font-size: 0.75rem;"><i class="fas fa-external-link-alt me-1"></i>Visit Link</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-4 bg-light rounded-4">
+                    <p class="text-muted mb-0">No resources available.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .hover-up {
+        transition: all 0.3s ease;
+    }
+    .hover-up:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+    }
+    .hover-bg:hover {
+        background-color: #f8f9fa !important;
+    }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;  
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

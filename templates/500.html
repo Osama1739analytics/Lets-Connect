@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Server Error - Let's Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden text-center">
+                <div class="card-body p-5">
+                    <div class="error-code-badge mx-auto mb-4" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(249, 115, 22, 0.1)); color: #dc2626;">
+                        <span>500</span>
+                    </div>
+                    <h1 class="display-6 fw-bold mb-3">Something went wrong</h1>
+                    <p class="text-secondary mb-4">
+                        We're having trouble loading this page. Please try again in a moment.
+                    </p>
+                    <a href="{% url 'home:index' %}" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        <i class="fas fa-home me-2"></i>Return Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-code-badge {
+        width: 88px;
+        height: 88px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 800;
+    }
+</style>
+{% endblock %}

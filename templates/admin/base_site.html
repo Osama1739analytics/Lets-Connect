@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Let's Connect Administration{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="https://img.icons8.com/ios-filled/50/2a5d84/graduation-cap.png" alt="P2P Logo" style="width: 30px; height: 30px; margin-right: 10px; vertical-align: middle;">
+        Let's Connect Administration
+    </a>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    #header {
+        background: linear-gradient(135deg, #2a5d84, #1e4a6b);
+        border-bottom: 3px solid #1e4a6b;
+    }
+    
+    #site-name a {
+        color: white !important;
+        font-weight: bold;
+        font-size: 18px;
+        text-decoration: none;
+    }
+    
+    #site-name a:hover {
+        color: #f0f0f0 !important;
+    }
+    
+    .module h2, .module caption, .inline-group h2 {
+        background: linear-gradient(135deg, #2a5d84, #1e4a6b);
+        color: white;
+    }
+    
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: linear-gradient(135deg, #2a5d84, #1e4a6b);
+        border: none;
+        color: white;
+    }
+    
+    .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
+        background: linear-gradient(135deg, #1e4a6b, #2a5d84);
+    }
+    
+    .default {
+        background: linear-gradient(135deg, #2a5d84, #1e4a6b);
+    }
+    
+    .default:hover {
+        background: linear-gradient(135deg, #1e4a6b, #2a5d84);
+    }
+</style>
+{% endblock %}
