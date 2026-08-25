@@ -171,13 +171,17 @@ LOGIN_REDIRECT_URL = 'home:onboarding_setup'
 LOGOUT_REDIRECT_URL = 'home:login'
 
 # Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'sharyar.ali.104@gmail.com'
-EMAIL_HOST_PASSWORD = 'itsg iwri ykui wpmt'
+if os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('RENDER'):
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 465
+    EMAIL_USE_TLS = False
+    EMAIL_USE_SSL = True
+    EMAIL_HOST_USER = 'sharyar.ali.104@gmail.com'
+    EMAIL_HOST_PASSWORD = 'itsg iwri ykui wpmt'
+
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # social-auth settings (set your real keys in env variables)
