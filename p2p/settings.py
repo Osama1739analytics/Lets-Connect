@@ -19,6 +19,8 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
     'https://lets-connect-fyp.onrender.com',
     'https://*.onrender.com',
+    'https://lets-connect-production.up.railway.app',
+    'https://*.up.railway.app',
 ]
 
 # Application definition
