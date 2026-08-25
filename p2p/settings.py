@@ -18,6 +18,7 @@ ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://lets-connect-fyp.onrender.com',
+    'https://*.onrender.com',
 ]
 
 # Application definition
